@@ -1,0 +1,35 @@
+services:
+  lab-framework:
+    image: ghcr.io/codygreen/lab-framework-demo-lab-framework:sha-b5a5e71
+    pull_policy: always
+    # build:
+    #   dockerfile: ./Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - "./.env:/app/.env"
+
+  redis:
+    image: ghcr.io/codygreen/lab-framework-demo-redis:sha-b5a5e71
+    pull_policy: always
+    # build:
+    #   dockerfile: ./Dockerfile.redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - cache:/data
+
+volumes:
+  cache:
+    driver: local
+
+networks:
+  default:
+    name: lab-framework
+    driver: bridge

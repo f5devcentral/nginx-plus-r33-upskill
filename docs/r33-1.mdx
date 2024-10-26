@@ -16,37 +16,87 @@ The goals of this upskill session are:
 
 1. Changes starting on NGINX Plus R33
 
-
-After the upskill sessions, you will be able to:
-
-1. Understand the changes that come with NGINX Plus R33.
 ---
 
 ## NGINX Plus R33
 
-Before we go into NGINX One Console, lets take a step back and understand **NGINX One**.
+### Background
 
-### Breaking changes
+In the past, F5 had minimal visibility with compliant usage checks or entitlement enforcement from customers using NGINX
+Plus. F5 sellers, renewal, and support teams struggle understanding NGINX Plus usage and how many customers are using NGINX Plus
+beyond their entitlement expiration in a non-compliant way. This leads to fewer than expected renewals causing the NGINX
+usage to be over-reported while also reducing potential NGINX revenue opportunity.
 
+NGINX Plus Release 33 is addressing this product gap by introducing out of the box enforcement and usage reporting
+capabilities. The visibility and insights from this data would allow F5 sellers to be much more informed and effective
+in new as well as renewal opportunities for NGINX.
 
-### Entitlement and visibility (E&V)
+As a pre-requisite, access to a valid subscription entitlement artifact (JWT) is now mandatory for NGINX to run.
+All NGINX customers (new and existing) are required to deploy the entitlement artifact (JWT) obtainable from their MyF5
+account prior to running NGINX. A 90-day grace period at the end of subscription expiration would be provided to renew
+NGINX subscription. Note that no application traffic would be impacted even after the grace period expiration until
+NGINX is restarted.
 
-<br/>
+This artifact would also be used to enforce reporting of NGINX commercial usage data to F5. R33 would require all
+connected customers to report their NGINX usage to the F5 licensing endpoint (product.connect.nginx.com), or in case of
+disconnected customers, to NGINX Instance Manager (NIM). There is an opt-in 180 day reporting grace period to provide
+flexibility to configure NGINX to report its usage. Consecutive non-reporting beyond 180 days would cause NGINX to stop
+accepting any new connections.
 
-### System outline
+### Data Reported by NGINX
 
-Now we know customers need to submit a report on NGINX Plus usage, the following are three methods that can be used.
+NGINX Plus would collect and report following data starting R33. This data is sent encrypted from each NGINX instance to
+the F5 licensing endpoint or NIM which further makes the data available to F5.
 
-1. NGINX Plus to F5 Endpoint
-1. NGINX Plus to NGINX Instance Manager (NIM)
-    - NIM is connected to internet
-    - NIM is disconnected to internet, aka air-gapped environment.
+- NGINX version
+- NGINX App Protect Status
+- Instance UniqueID
+- Bytes received by/sent to clients (http, stream)
+- Number of requests handled (http)
+- Bytes received from and sent to upstreams (http, stream)
+- Number of accepted connections (http, stream)
+- Number of workers running at the time of report
+- K8s nodes count (in case of NIC)
+- NGINX Uptime (in seconds)
+- NGINX Reloads during uptime
+- Collection start and end time.
 
-> :warning: **Note:** Placeholder for a warning message.
+### Submitting NGINX Usage Report
 
-### Connection details
+The following are three options one can use for reporting NGINX usage to the F5 Licensing Endpoint:
 
-> TODO: Provide connection details for the three cases above.the instances.
+1. NGINX Plus with internet access reports to F5
+1. NGINX Plus managed by a connected NGINX Instance Manager (NIM) with internet access reports to F5
+1. NGINX Plus managed by a disconnected NGINX Instance Manager (NIM). Steps for submitting report consists of:
+    - Downloading NGINX usage report from NIM
+    - Submitting NGINX usage report to F5
+    - Download NGINX usage report status from F5
+    - Submit usage report status to NIM
+
+#### NGINX Plus connected to internet
+
+Outline below show how this reporting option. This one is the most simplest of the three
+
+TODO: Add diagram
+
+#### NGINX Plus managed by NIM connected to internet
+
+If you choose not to connect your NGINX Plus instance directly to the F5 License Server, you have the option of having
+your instance managed by NIM that is connected to the internet. NIM then reports your NGINX Plus usage directly to the
+F5 License Server automatically.
+
+TODO: Add diagram
+
+#### Fully disconnected environment
+
+If your security policies require a fully disconnected environment, your NGINX Plus instance MUST be managed by NIM. So
+in the case here, NGINX Plus and NIM is completely disconnected from the internet. Instead of letting your NGINX Plus
+instance or NIM handing the usage report, you will be required to handle this work.
+
+### Connection details for connected environments
+
+Whether you decide to setup reporting from the NGINX Plus instance or NIM, you must allow ingress and egress firewall
+rules to allow the following connection.
 
 | Type     | Value                     |
 | -------- | -----------------------   |
@@ -56,6 +106,16 @@ Now we know customers need to submit a report on NGINX Plus usage, the following
 
 <br/>
 
+> :warning: **Note:** Placeholder for a warning message.
+
+### Workflow
+
+There are three workflows that happens throughout the NGINX Plus lifetime
+
+1. NGINX Startup Check
+1. NGINX License Expiration Check
+1. NGINX Usage Reporting Check
+
 
 ## Upskill session layout
 
@@ -64,23 +124,6 @@ In these sessions, we are breaking the labs into into the following sections bel
 - Demo
 - Interactive
 - Fix It
-
-### Environment
-
-The diagram of the lab environment is shown in below.
-
-![](media/upskill/presentation-3.png)
-
-A total of 3 systems will be available.
-1. Lab Framework
-1. NGINX Plus Instance
-1. NGINX Open Source Instance
-
-The **Lab Framework** contains the following
-- **docker** installed
-- this Lab Guide
-
-Portions of this session will involve bring up NGINX container instance that run on the **Lab Framework** system.
 
 ### Demo
 
@@ -95,11 +138,35 @@ Participants may need to update configuration files in order to get a working so
 The last portion will be the Fix It Lab where the participants are to deploy a broken solution and
 then using their validation and troubleshooting knowledge solve the mystery.
 
+### Environment
+
+The diagram of the lab environment is shown below.
+
+![](media/upskill/presentation-3.png)
+
+A total of 3 systems will be available.
+1. Lab Framework
+1. NGINX Plus Instance (for fresh R33 install)
+1. NGINX Plus Instance (for R33 upgrade)
+1. NGINX Instance Manager
+
+The **Lab Framework** contains the following
+- this Lab Guide
+
+> :warning: **Note:** The UDF environment does not support a true disconnected environment. So when we do the
+interactive lab, we will go through steps as if NGINX Plus and NIM are not connected to the internet but do note they
+have internet connectivity.
+
 ## Use Cases
 
-For the NGINX Plus R33 release, there will only be one use case
+For the NGINX Plus R33 release, there will only be one use case:
 
-1. Entitlement and Visibility, aka licensing NGINX Plus
+1. Entitlement and Visibility (E&V), aka licensing NGINX Plus
+
+In each of the labs, we will be going over the different ways of handing E&V:
+
+1. NGINX Plus connected directly to F5 Licensing Endpoint
+1. Air-gapped environment where NGINX Plus is connected to NIM
 
 ## Up next
 

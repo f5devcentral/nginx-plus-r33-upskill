@@ -73,21 +73,29 @@ The following are three options one can use for reporting NGINX usage to the F5 
     - Download NGINX usage report status from F5
     - Submit usage report status to NIM
 
-#### NGINX Plus connected to internet
+Take a look at the diagram below that shows the entire view of all options available.
 
-Outline below show how this reporting option. This one is the most simplest of the three
+![R33 License Options](media/intro/1.png)
 
-TODO: Add diagram
+On the NGINX Plus R33 instance, you have two endpoints available for configuring usage report:
+1. SaaS
+1. On-Prem via NIM
 
-#### NGINX Plus managed by NIM connected to internet
+#### Option 1: NGINX Plus connected to internet
 
-If you choose not to connect your NGINX Plus instance directly to the F5 License Server, you have the option of having
-your instance managed by NIM that is connected to the internet. NIM then reports your NGINX Plus usage directly to the
-F5 License Server automatically.
+You can refer to the path shown as Option 1 in the diagram above. This one is the most simplest of the three because
+you do not have any restrictions for the NGINX Plus instance and it can connect to the Reporting Endpoint directly.
+You are not required to take any manual actions for submitting the usage report.
 
-TODO: Add diagram
+#### Option 2a: NGINX Plus managed by NIM connected to internet
 
-#### Fully disconnected environment
+There may be a case where the NGINX Plus instance cannot be directly be connected to the internet. Or you may not be
+comfortable with the fact your NGINX instance is sending traffic out to the internet. If this fits your case, you have
+the option of having your NGINX Plus instance managed by NIM where NIM is connected to the internet. NIM then reports
+your NGINX Plus usage to the F5 License Server automatically. Like Option 1 above, you are not required to take any
+manual actions for submitting the usage report.
+
+#### Option 2b: NGINX Plus and NIM fully disconnected
 
 If your security policies require a fully disconnected environment, your NGINX Plus instance MUST be managed by NIM. So
 in the case here, NGINX Plus and NIM is completely disconnected from the internet. Instead of letting your NGINX Plus
@@ -142,7 +150,7 @@ then using their validation and troubleshooting knowledge solve the mystery.
 
 The diagram of the lab environment is shown below.
 
-![](media/upskill/presentation-3.png)
+![](media/intro/2.png)
 
 A total of 3 systems will be available.
 1. Lab Framework
@@ -156,6 +164,8 @@ The **Lab Framework** contains the following
 > :warning: **Note:** The UDF environment does not support a true disconnected environment. So when we do the
 interactive lab, we will go through steps as if NGINX Plus and NIM are not connected to the internet but do note they
 have internet connectivity.
+
+---
 
 ## Use Cases
 

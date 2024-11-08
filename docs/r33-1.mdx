@@ -22,28 +22,28 @@ The goals of this upskill session are:
 
 ### Background
 
-The NGINX Plus Release 33 requires that all instances have a valid **JSON Web Token (JWT)** license. The license is linked 
-to the subscription but not the individual instance of NGINX Plus. The NGINX Plus instance will also automatically send 
+The NGINX Plus Release 33 requires that all instances have a valid **JSON Web Token (JWT)** license. The license is linked
+to the subscription but not the individual instance of NGINX Plus. The NGINX Plus instance will also automatically send
 usage reports to F5’s licensing endpoint **product.connect.nginx.com**.  The usage reports are a requirement of all current
 license agreements. In the case of environments with no direct access to F5 licensing endpoint customers can generate the
 reports using NGINX Instance Manager or use NGINX Instance Manager to proxy the reports to the F5 licensing endpoint.
 
 All NGINX Plus customers (new and existing) are required to include the entitlement artifact **JWT** in their NGINX Plus
-installation.  The JWT can be downloaded from the MyF5 account associated to the NGINX Plus license. There is a built-in 
-90-day grace period at the end of all NGINX Plus subscriptions. 
+installation.  The JWT can be downloaded from the MyF5 account associated to the NGINX Plus license. There is a built-in
+90-day grace period at the end of all NGINX Plus subscriptions.
 
 > **Note:** No application traffic would be impacted even after the grace period expiration until NGINX is restarted.
 
 In addition to having a valid JWT included in the NGINX Plus installation, each instance is required to submit a report at
 least once every 180 days to prevent NGINX from dropping new connections. The usage reports are submitted by default to
 **product.connect.nginx.com**. NGINX Plus installs without access to the F5 licensing endpoint can submit them to NGINX
-Instance Manager. The NGINX Instance Manager can send the reports to the F5 licensing endpoint or the Administrator can 
+Instance Manager. The NGINX Instance Manager can send the reports to the F5 licensing endpoint or the Administrator can
 generate the report manually and submit it to the F5 licensing endpoint.
 
 ### Data Reported by NGINX
 
 NGINX Plus will collect and report following data starting with R33. This data is encrypted and sent from each NGINX instance to
-the F5 licensing endpoint or NIM which can then send the data to the F5 licensing endpoint or the Administrator can manually 
+the F5 licensing endpoint or NIM which can then send the data to the F5 licensing endpoint or the Administrator can manually
 generate the report and submit it to F5.
 
 - NGINX version
@@ -81,23 +81,23 @@ On the NGINX Plus R33 instance, you have two endpoints available for configuring
 
 #### Option 1: NGINX Plus connected to internet
 
-You can refer to the path shown as Option 1 in the diagram above. This is the simplest of the three, there are no 
-restrictions for the NGINX Plus instance and it can connect to the Reporting Endpoint directly. You are not required to 
+You can refer to the path shown as Option 1 in the diagram above. This is the simplest of the three, there are no
+restrictions for the NGINX Plus instance and it can connect to the Reporting Endpoint directly. You are not required to
 take any manual actions for submitting the usage report.
 
 #### Option 2a: NGINX Plus managed by NIM connected to internet
 
 In situations where the NGINX Plus instance is not directly be connected to the internet or it blocked from connecting
 to **product.connect.nginx.com** option 2a may be a valid option. If this design your NGINX Plus instance managed by NIM is
-connected to the internet. NIM then reports your NGINX Plus usage to the F5 License Server automatically. Like Option 1 
+connected to the internet. NIM then reports your NGINX Plus usage to the F5 License Server automatically. Like Option 1
 you are not required to take any manual actions when submitting the usage report.
 
 #### Option 2b: NGINX Plus and NIM fully disconnected
 
 If your security policies require a fully disconnected environment, your NGINX Plus instance MUST be managed by NIM. So
-in this case NGINX Plus and NIM are completely disconnected from the internet. The administrator will manually generate 
+in this case NGINX Plus and NIM are completely disconnected from the internet. The administrator will manually generate
 the NGINX plus usage report and submit it to **product.connect.nginx.com** and then download the resulting report status and
-submit it to NIM. 
+submit it to NIM.
 
 ### Connection details for connected environments
 

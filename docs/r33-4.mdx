@@ -85,6 +85,8 @@ report to a file named `license_report.zip`.
       --output license_report.zip
     ```
 
+> TODO: Make note of the value for `Authorization: Basic`
+
 1. Run the following command to submit the usge report to F5.
     ```shell
     curl --location \
@@ -92,6 +94,9 @@ report to a file named `license_report.zip`.
       --header "Authorization: Bearer $LICENSE" \
       --form 'file=@"license_report.zip"'
     ```
+
+> TODO: Make note to pay attention to the output, particularly with  `statusLink`
+
 
     <Collapsible title="Example Output">
     ```shell

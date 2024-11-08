@@ -14,7 +14,7 @@ There will not be a live session for this upskill session and all content will p
 
 The goals of this upskill session are:
 
-1. Changes starting on NGINX Plus R33
+1. Demonstrate licensing changes starting with NGINX Plus R33
 
 ---
 
@@ -22,31 +22,29 @@ The goals of this upskill session are:
 
 ### Background
 
-In the past, F5 had minimal visibility with compliant usage checks or entitlement enforcement from customers using NGINX
-Plus. F5 sellers, renewal, and support teams struggle understanding NGINX Plus usage and how many customers are using NGINX Plus
-beyond their entitlement expiration in a non-compliant way. This leads to fewer than expected renewals causing the NGINX
-usage to be over-reported while also reducing potential NGINX revenue opportunity.
+The NGINX Plus Release 33 requires that all instances have a valid **JSON Web Token (JWT)** license. The license is linked 
+to the subscription but not the individual instance of NGINX Plus. The NGINX Plus instance will also automatically send 
+usage reports to F5’s licensing endpoint **product.connect.nginx.com**.  The usage reports are a requirement of all current
+license agreements. In the case of environments with no direct access to F5 licensing endpoint customers can generate the
+reports using NGINX Instance Manager or use NGINX Instance Manager to proxy the reports to the F5 licensing endpoint.
 
-NGINX Plus Release 33 is addressing this product gap by introducing out of the box enforcement and usage reporting
-capabilities. The visibility and insights from this data would allow F5 sellers to be much more informed and effective
-in new as well as renewal opportunities for NGINX.
+All NGINX Plus customers (new and existing) are required to include the entitlement artifact **JWT** in their NGINX Plus
+installation.  The JWT can be downloaded from the MyF5 account associated to the NGINX Plus license. There is a built-in 
+90-day grace period at the end of all NGINX Plus subscriptions. 
 
-As a pre-requisite, access to a valid subscription entitlement artifact (JWT) is now mandatory for NGINX to run.
-All NGINX customers (new and existing) are required to deploy the entitlement artifact (JWT) obtainable from their MyF5
-account prior to running NGINX. A 90-day grace period at the end of subscription expiration would be provided to renew
-NGINX subscription. Note that no application traffic would be impacted even after the grace period expiration until
-NGINX is restarted.
+> **Note:** No application traffic would be impacted even after the grace period expiration until NGINX is restarted.
 
-This artifact would also be used to enforce reporting of NGINX commercial usage data to F5. R33 would require all
-connected customers to report their NGINX usage to the F5 licensing endpoint (product.connect.nginx.com), or in case of
-disconnected customers, to NGINX Instance Manager (NIM). There is an opt-in 180 day reporting grace period to provide
-flexibility to configure NGINX to report its usage. Consecutive non-reporting beyond 180 days would cause NGINX to stop
-accepting any new connections.
+In addition to having a valid JWT included in the NGINX Plus installation, each instance is required to submit a report at
+least once every 180 days to prevent NGINX from dropping new connections. The usage reports are submitted by default to
+**product.connect.nginx.com**. NGINX Plus installs without access to the F5 licensing endpoint can submit them to NGINX
+Instance Manager. The NGINX Instance Manager can send the reports to the F5 licensing endpoint or the Administrator can 
+generate the report manually and submit it to the F5 licensing endpoint.
 
 ### Data Reported by NGINX
 
-NGINX Plus would collect and report following data starting R33. This data is sent encrypted from each NGINX instance to
-the F5 licensing endpoint or NIM which further makes the data available to F5.
+NGINX Plus will collect and report following data starting with R33. This data is encrypted and sent from each NGINX instance to
+the F5 licensing endpoint or NIM which can then send the data to the F5 licensing endpoint or the Administrator can manually 
+generate the report and submit it to F5.
 
 - NGINX version
 - NGINX App Protect Status
@@ -63,7 +61,7 @@ the F5 licensing endpoint or NIM which further makes the data available to F5.
 
 ### Submitting NGINX Usage Report
 
-The following are three options one can use for reporting NGINX usage to the F5 Licensing Endpoint:
+The following are three options that can be used for reporting NGINX usage to the F5 Licensing Endpoint:
 
 1. NGINX Plus with internet access reports to F5
 1. NGINX Plus managed by a connected NGINX Instance Manager (NIM) with internet access reports to F5
@@ -78,33 +76,33 @@ Take a look at the diagram below that shows the entire view of all options avail
 ![R33 License Options](media/intro/1.png)
 
 On the NGINX Plus R33 instance, you have two endpoints available for configuring usage report:
-1. SaaS
+1. SaaS **product.connect.nginx.com**
 1. On-Prem via NIM
 
 #### Option 1: NGINX Plus connected to internet
 
-You can refer to the path shown as Option 1 in the diagram above. This one is the most simplest of the three because
-you do not have any restrictions for the NGINX Plus instance and it can connect to the Reporting Endpoint directly.
-You are not required to take any manual actions for submitting the usage report.
+You can refer to the path shown as Option 1 in the diagram above. This is the simplest of the three, there are no 
+restrictions for the NGINX Plus instance and it can connect to the Reporting Endpoint directly. You are not required to 
+take any manual actions for submitting the usage report.
 
 #### Option 2a: NGINX Plus managed by NIM connected to internet
 
-There may be a case where the NGINX Plus instance cannot be directly be connected to the internet. Or you may not be
-comfortable with the fact your NGINX instance is sending traffic out to the internet. If this fits your case, you have
-the option of having your NGINX Plus instance managed by NIM where NIM is connected to the internet. NIM then reports
-your NGINX Plus usage to the F5 License Server automatically. Like Option 1 above, you are not required to take any
-manual actions for submitting the usage report.
+In situations where the NGINX Plus instance is not directly be connected to the internet or it blocked from connecting
+to **product.connect.nginx.com** option 2a may be a valid option. If this design your NGINX Plus instance managed by NIM is
+connected to the internet. NIM then reports your NGINX Plus usage to the F5 License Server automatically. Like Option 1 
+you are not required to take any manual actions when submitting the usage report.
 
 #### Option 2b: NGINX Plus and NIM fully disconnected
 
 If your security policies require a fully disconnected environment, your NGINX Plus instance MUST be managed by NIM. So
-in the case here, NGINX Plus and NIM is completely disconnected from the internet. Instead of letting your NGINX Plus
-instance or NIM handing the usage report, you will be required to handle this work.
+in this case NGINX Plus and NIM are completely disconnected from the internet. The administrator will manually generate 
+the NGINX plus usage report and submit it to **product.connect.nginx.com** and then download the resulting report status and
+submit it to NIM. 
 
 ### Connection details for connected environments
 
-Whether you decide to setup reporting from the NGINX Plus instance or NIM, you must allow ingress and egress firewall
-rules to allow the following connection.
+When implementing option 1 or 2a you will have to allow egress traffic from either the NGINX Plus instance or NIM
+to **product.connect.nginx.com**
 
 | Type     | Value                     |
 | -------- | -----------------------   |

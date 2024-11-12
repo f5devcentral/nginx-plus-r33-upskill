@@ -263,6 +263,7 @@ the usage report is downloaded as a zip file named `usage.zip`.
     ```
 
     <Collapsible title="Example Output">
+    ```shell
     curl --location 'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk' \
       --header "Authorization: Bearer $LICENSE" \
       --form 'file=@"usage.zip"'
@@ -272,6 +273,7 @@ the usage report is downloaded as a zip file named `usage.zip`.
       "pollIntervalInSeconds":30,
       "validUntilDate":"2024-11-07T06:35:25.313Z"
     }
+    ```
     </Collapsible>
 
 1. Now check on status of the uploaded report. The **report_id** here can be found from the output of the previous
@@ -283,6 +285,7 @@ command.
     ```
 
     <Collapsible title="Example Output">
+    ```shell
     curl --location 'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk/status/706812c5-32a7-41a4-bdf9-fec806b8f221' \
     --header "Authorization: Bearer $LICENSE"
     {
@@ -291,6 +294,7 @@ command.
       "readyForDownload": true,
       "downloadLink": "/ee/v1/entitlements/telemetry/bulk/download/706812c5-32a7-41a4-bdf9-fec806b8f221"
     }
+    ```
     </Collapsible>
 
 1. The response from above should indicate the status report is ready for download.Run the following command to download
@@ -312,6 +316,7 @@ the status report from F5 License Server. The example command below will downloa
     ```
 
     <Collapsible title="Example Output">
+    ```shell
     curl -k --location 'https://nim.local/api/platform/v1/report/upload' \
     --header 'Authorization: Basic YWRtaW46UGFzc3dvcmQxMjMh' \
     --form 'file=@"acknowledgement.zip"'
@@ -320,6 +325,7 @@ the status report from F5 License Server. The example command below will downloa
       "manifest":"..",
       "message":"Report uploaded successfully."
     }
+    ```
     </Collapsible>
 
 You now submitted the usage report to F5! You will need report the usage report at most 180 days.

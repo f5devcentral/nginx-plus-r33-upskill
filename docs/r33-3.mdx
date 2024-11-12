@@ -12,13 +12,16 @@ We will be going through a demo when you are in an environment connected to the 
 1. Configure NGINX Plus to submit usage report to NGINX Instance Manager (NIM) which will submit the report to the F5
 license server
 
-This demo video will go through the option 1.
+This demo video will go through the option 1. Shown below is a component diagram that shows an overview of how the
+usage report is being submitted.
+
+![NGINX Plus connected to internet](media/demo/1.png)
 
 ## Demo Lab
 
 Remember there are two areas thats introduced starting on r33
-1. You must have a valid JWT and that JWT must be within the 90-days grace period for NGINX to starting
-1. Once NGINX started, a report must be submitted with an interval of at most 180-days.
+1. You must have a valid JWT and that JWT must be within the 90-day grace period for NGINX to starting.
+1. Once NGINX started, a report must be submitted with an interval of at most 180 days.
 
 This demo video will show the following parts:
 1. Configuring NGINX Plus to connect to F5 license server

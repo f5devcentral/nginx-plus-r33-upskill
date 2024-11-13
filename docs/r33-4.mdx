@@ -178,11 +178,15 @@ Let's proceed to setup NGINX Plus so the endpoint is going to NIM instead of `pr
 
 This instance already have certificates setup so all you need to do in install NGINX Plus
 
-1. From UDF, open up a Web Shell for your NGINX Plus instance.
+1. From UDF, open up a Web Shell for your NGINX Plus instance (UDF Component NGINX Plus R33 (Preinstall)).
 
-1. Install NGINX Plus bu running `sudo apt install nginx-plus`
+1. Install NGINX Plus by running `sudo apt update` followed by `sudo apt install nginx-plus`
 
-1. Create your JWT file at `/etc/nginx/license.jwt`.
+1. Create your JWT file at `/etc/nginx/license.jwt` using the JWT file you used to license the NGINX Instance Manager in the previous steps. 
+
+`echo '<contents of your JWT file>' > /etc/nginx/license.jwt` 
+
+You can also open a blank file named `/etc/nginx/license.jwt` and paste the contents of the JWT file. 
 
 1. Open `/etc/nginx/nginx.conf` using your editor of choice.
 
@@ -282,7 +286,7 @@ the usage report is downloaded as a zip file named `usage.zip`.
     </Collapsible>
 
 1. Now check on status of the uploaded report. The **report_id** here can be found from the output of the previous
-command.
+command in the form of another UUID at the end of the "statusLink" value.
 
     ```shell
     curl --location 'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk/status/<report_id>' \

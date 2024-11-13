@@ -116,7 +116,7 @@ report to a file named `license_report.zip`.
 
 Note the UUID at the end of the statusLink output line. It's a string of 8-4-4-12 characters (example:7b926064-3360-4354-86d8-79b390efd178). Use this UUID string in the following commands where you see <id>.
 
-1. Check the status to check if the report is sucessfully uploaded and the status report is ready to download. Remember to swap out <id> for the UUID returned when you submitted the usage report to F5.
+1. Check the status to check if the report is sucessfully uploaded and the status report is ready to download. Remember to swap out \<id\> for the UUID returned when you submitted the usage report to F5.
     ```shell
     curl --location \
       'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk/status/<id>' \

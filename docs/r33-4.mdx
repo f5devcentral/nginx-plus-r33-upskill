@@ -100,9 +100,6 @@ report to a file named `license_report.zip`.
       --header "Authorization: Bearer $LICENSE" \
       --form 'file=@"license_report.zip"'
     ```
-Note the UUID at the end of the statusLink output line. It's a string of 8-4-4-12 characters (example:7b926064-3360-4354-86d8-79b390efd178). Use this UUID string in the following commands where you see <id>.
-
-
 > TODO: Make note to pay attention to the output, particularly with  `statusLink`
 
 
@@ -116,6 +113,8 @@ Note the UUID at the end of the statusLink output line. It's a string of 8-4-4-1
     }
     ```
     </Collapsible>
+
+Note the UUID at the end of the statusLink output line. It's a string of 8-4-4-12 characters (example:7b926064-3360-4354-86d8-79b390efd178). Use this UUID string in the following commands where you see <id>.
 
 1. Check the status to check if the report is sucessfully uploaded and the status report is ready to download. Remember to swap out <id> for the UUID returned when you submitted the usage report to F5.
     ```shell

@@ -117,7 +117,7 @@ Note the UUID at the end of the statusLink output line. It's a string of 8-4-4-1
     ```
     </Collapsible>
 
-1. Check the status to check if the report is sucessfully uploaded and the status report is ready to download. The I
+1. Check the status to check if the report is sucessfully uploaded and the status report is ready to download. Remember to swap out <id> for the UUID returned when you submitted the usage report to F5.
     ```shell
     curl --location \
       'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk/status/<id>' \
@@ -139,7 +139,7 @@ Note the UUID at the end of the statusLink output line. It's a string of 8-4-4-1
     </Collapsible>
 
 1. Run the following to download the license acknowledgment report from F5. In the example below, we are downloading the
-report to a file named `lic_acknowledgement.zip`.
+report to a file named `lic_acknowledgement.zip`. Remember to swap out <id> for the UUID returned when you submitted the usage report to F5.
 
     ```shell
     curl --location \

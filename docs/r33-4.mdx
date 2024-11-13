@@ -22,6 +22,12 @@ The diagram below shows the component view and a main workflow of this lab.
 
 ![Disconnected components](media/interactive/2.png)
 
+##Lab environment notes
+
+Windows users may need to use CTL+Shift+V to paste commands into Webshell. 
+
+Firefox does not handle Webshell well. The current line drops below the bottom of the screen making it difficult to work with.
+
 ## Prerequisites
 
 1. NGINX R33 JWT
@@ -94,6 +100,8 @@ report to a file named `license_report.zip`.
       --header "Authorization: Bearer $LICENSE" \
       --form 'file=@"license_report.zip"'
     ```
+Note the UUID at the end of the statusLink output line. It's a string of 8-4-4-12 characters (example:7b926064-3360-4354-86d8-79b390efd178). Use this UUID string in the following commands where you see <id>.
+
 
 > TODO: Make note to pay attention to the output, particularly with  `statusLink`
 
@@ -162,7 +170,7 @@ report to a file named `lic_acknowledgement.zip`.
     ```
     </Collapsible>
 
-1. You have now licensed NIM. Go back to your NIM UI and refresh your page. You will now notice it is activated.
+1. You have now licensed NIM. Go back to your NIM UI and refresh your page. Notice the License Activation warning is now gone.
   ![NIM Licensed](media/interactive/7.png)
 
 Let's proceed to setup NGINX Plus so the endpoint is going to NIM instead of `product.connect.nginx.com`.

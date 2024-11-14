@@ -8,25 +8,26 @@ order: 4
 
 We will be going through an interactive lab where you will be working on a scenario where the NGINX Plus instance
 and the NGINX Instance Manager (NIM) is completely air-gapped. This is a disconnected environment where the
-organization's security policy requires thees two components to be disconnected from any access from the internet.
+organization's security policy requires these two components to be disconnected from any access from the internet.
 
 > NOTE: This lab is created in UDF and all components are connected to the Management network, which is routed
 to the internet, by default. We will be going through the exercise here as if NIM and NGINX Plus are disconnected but
 do know they really do have internet connectivity in this lab.
 
-The diagram below shows the network overview of this portion of this lab.
+The diagram below shows the network overview of this portion of this lab. Again, NGINX Plus and NIM here really have
+internet connectivity but will go through as if they do not.
 
 ![Disconnected Environment](media/interactive/1.png)
 
-The diagram below shows the component view and a main workflow of this lab.
+The diagram below shows the component view and a main workflow one would do from a Jumphost.
 
 ![Disconnected components](media/interactive/2.png)
 
 ## Lab environment notes
 
-Windows users may need to use CTL+Shift+V to paste commands into Webshell. 
+> Windows users need to **Ctrl** + **Shift** + **v** to paste commands into the *Web Shell*.
 
-Firefox does not handle Webshell well. The current line drops below the bottom of the screen making it difficult to work with.
+Firefox does not handle **Web Shell** well. The current line drops below the bottom of the screen making it difficult to work with.
 
 ## Prerequisites
 
@@ -36,22 +37,20 @@ Firefox does not handle Webshell well. The current line drops below the bottom o
 
 Let's get into this. An overview of steps we will be doing in this lab are listed below.
 
-1. NIM license is applied but it hasn't been activated.
+1. NIM license is applied but it is not activated
 1. Configure NGINX Plus to report to NIM as the endpoint
-1. From **Jumphost**, which has connectivity to NIM and the internet, download the usage report from NIM
-1. Upload the usage report to F5 License Server
-1. Download report status from the F5 License Server
-1. Upload the status report to NIM
+1. Handle submitting the usage report from a **Jumphost**, which has internet connectivity, to the F5 Licensing Endpoint
 
-> All these steps are automatically handled if NGINX Plus or NIM is connected to the internet. Because this scenario
-here is on a fully disconnected environment, you must manually complete these steps.
+> The extra manual steps for submitting the usage report is automatically handled if NGINX Plus or NIM have internet
+connectivity. But because we are covering a case where NGINX and NIM are in restricted network, you must manually
+complete these steps from a device that have internet connectivity.
 
 > You have up to 180 days to submit a report to F5.
 
 ### NIM activation
 
-Why is NIM being used in this scenario? Remember NGINX Plus R33 will require usage reports being sent to an SaaS or NIM
-endpoint. Because NGINX Plus is air-gapped, we must use NIM as the endpoint for usage reports.
+Why is NIM being used in this scenario? Remember NGINX Plus R33 will require usage reports being sent to an F5 SaaS or
+NIM endpoint. Because NGINX Plus is air-gapped, we must use NIM as the endpoint.
 
 Why do we have to activate NIM? The scenario here also requires NIM to be air-gapped as well as NGINX Plus. The
 license activation process does happen automatically when it is connected to the internet but for the case here, we must
@@ -69,43 +68,58 @@ licensed but not activated.
 1. Select **Sign In** then provide the following credentials: admin / Password123!
   ![NIM Sign In](media/interactive/5.png)
 
-1. In the top right corner, select the Settings icon and confirm you are on the Licenses menu on the left. You should notice NIM is
-already configured to be in **offline mode**. Also notice the warning message regarding License Activation.
+1. In the top right corner, select the Settings icon and confirm you are on the Licenses menu on the left. Notice NIM is
+already configured in **Disconnected Mode**. Also notice the warning message regarding License Activation.
+
+  > Details for configuring NIM for **Disconnected Mode** can be found the in
+  [Set the operation mode to disconnected](https://docs.nginx.com/nginx-instance-manager/disconnected/offline-install-guide/#set-mode-disconnected)
+  section of the NIM Offline Installation Guide.
+
   ![NIM Unlicensed](media/interactive/6.png)
 
 Let's now go through the manual activation process.
 
 1. Log into the **Web Shell** of your **Jumphost**.
 
-1. We will save your NGINX R33 JWT as an environment variable.
+1. We will save your NGINX R33 JWT as an environment variable for ease. This will be used as your auth token when making
+REST API calls to the F5 Licensing Endpoint.
     ```shell
     export LICENSE=<PasteJWTValueHere>
     ```
 
-1. Run the following command to download the NIM license report. In the example below, we are downloading the license
+1. We will also be saving the *Basic Authorization* token when making REST API calls to NIM. Any `curl` commands for NIM
+will use this token.
+    ```shell
+    export NIM_AUTH_TOKEN=`echo -n "admin:Password123!" | base64`
+    ```
+
+1. Run the following command to download the initial usage report. In the example below, we are downloading the license
 report to a file named `license_report.zip`.
     ```shell
     curl -k --location \
       'https://nim.local/api/platform/v1/report/download?format=zip&reportType=initial&telemetryAction=download' \
-      --header 'Authorization: Basic YWRtaW46UGFzc3dvcmQxMjMh' \
+      --header "Authorization: Basic $NIM_AUTH_TOKEN" \
       --output license_report.zip
     ```
 
-> TODO: Make note of the value for `Authorization: Basic`
-
-1. Run the following command to submit the usage report to F5.
+1. Run the following command to submit the usage report to the  F5 Licensing Endpoint for verification.
     ```shell
-    curl --location \
+    curl --location -s \
       'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk' \
       --header "Authorization: Bearer $LICENSE" \
-      --form 'file=@"license_report.zip"'
+      --form 'file=@"license_report.zip"' | jq
     ```
-> TODO: Make note to pay attention to the output, particularly with  `statusLink`
 
+    :warning: Pay attention to the UUID of the *statusLink* value. You will be using this for future `curl`
+    commands. In the example here, it is **7b926064-3360-4354-86d8-79b390efd178**. You can see an example response
+    below.
 
     <Collapsible title="Example Output">
     ```shell
-    ubuntu@nim:~$ curl --location 'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk' --header "Authorization: Bearer $LICENSE" --form 'file=@"license_report.zip"' | jq
+    root@lab-framework:~$ curl --location -s \
+      'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk' \
+      --header "Authorization: Bearer $LICENSE" \
+      --form 'file=@"license_report.zip"' | jq
     {
       "statusLink": "/ee/v1/entitlements/telemetry/bulk/status/7b926064-3360-4354-86d8-79b390efd178",
       "pollIntervalInSeconds": 30,
@@ -114,18 +128,18 @@ report to a file named `license_report.zip`.
     ```
     </Collapsible>
 
-Note the UUID at the end of the statusLink output line. It's a string of 8-4-4-12 characters (example:7b926064-3360-4354-86d8-79b390efd178). Use this UUID string in the following commands where you see \<id\>.
-
-1. Check the status to check if the report is sucessfully uploaded and the status report is ready to download. Remember to swap out \<id\> for the UUID returned when you submitted the usage report to F5.
+1. Run the command below to check if the report is successfully uploaded and if the acknowledgement report is ready for
+download. Remember to swap out **\<report-id\>** for the **UUID** you got from the response when you submitted the usage
+report to the F5 Licensing Endpoint.
     ```shell
-    curl --location \
-      'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk/status/<id>' \
+    curl --location -s \
+      'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk/status/<report-id>' \
       --header "Authorization: Bearer $LICENSE"  | jq
     ```
 
     <Collapsible title="Example Output">
     ```shell
-    ubuntu@nim:~$ curl --location \
+    root@nim:~$ curl --location -s \
       'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk/status/7b926064-3360-4354-86d8-79b390efd178' \
       --header "Authorization: Bearer $LICENSE"  | jq
     {
@@ -138,29 +152,29 @@ Note the UUID at the end of the statusLink output line. It's a string of 8-4-4-1
     </Collapsible>
 
 1. Run the following to download the license acknowledgment report from F5. In the example below, we are downloading the
-report to a file named `lic_acknowledgement.zip`. Remember to swap out \<id\> for the UUID returned when you submitted the usage report to F5.
-
+report to a file named `lic_acknowledgement.zip`. Remember to swap out **\<report-id\>** for the **UUID** you got from
+the response when you submitted the usage report to the F5 Licensing Endpoint.
     ```shell
-    curl --location \
-      'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk/download/<id>' \
+    curl --location -s \
+      'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk/download/<report-id>' \
       --header "Authorization: Bearer $LICENSE" \
       --output lic_acknowledgement.zip
     ```
 
-1. Run the following to upload the license acknowledgment report to NIM.
+1. Now finally, run the following to upload the license acknowledgment report to NIM.
     ```shell
-    curl -k --location \
+    curl -k --location -s \
       'https://nim.local/api/platform/v1/report/upload' \
-      --header 'Authorization: Basic YWRtaW46UGFzc3dvcmQxMjMh' \
-      --form 'file=@"lic_acknowledgement.zip"'
+      --header "Authorization: Basic $NIM_AUTH_TOKEN" \
+      --form 'file=@"lic_acknowledgement.zip"' | jq
     ```
 
     <Collapsible title="Example Output">
     ```shell
-    ubuntu@lab-framework:~$ curl -k --location \
+    root@lab-framework:~$ curl -k --location -s \
       'https://nim.local/api/platform/v1/report/upload' \
-      --header 'Authorization: Basic YWRtaW46UGFzc3dvcmQxMjMh' \
-      --form 'file=@"lic_acknowledgement.zip"'
+      --header "Authorization: Basic $NIM_AUTH_TOKEN" \
+      --form 'file=@"lic_acknowledgement.zip"' | jq
 
     {
       "manifest": "...",
@@ -169,29 +183,41 @@ report to a file named `lic_acknowledgement.zip`. Remember to swap out \<id\> fo
     ```
     </Collapsible>
 
-1. You have now licensed NIM. Go back to your NIM UI and refresh your page. Notice the License Activation warning is now gone.
+1. You have now licensed NIM and submitted the initial usage report. Go back to your NIM UI and refresh your page.
+Notice the License Activation warning is now gone.
   ![NIM Licensed](media/interactive/7.png)
 
-Let's proceed to setup NGINX Plus so the endpoint is going to NIM instead of `product.connect.nginx.com`.
+> We've went through manual steps for activating NIM license and submitting the initial usage report. There is also
+a script available on the
+[Add a license in a disconnected environment](https://docs.nginx.com/nginx-instance-manager/disconnected/add-license-disconnected-deployment/)
+page from NGINX Instance Manager documentation.
+
+Let's proceed to setup NGINX Plus so the endpoint is going to NIM instead of the default `product.connect.nginx.com`.
 
 ### Configure NGINX Plus report endpoint
 
-This instance already have certificates setup so all you need to do in install NGINX Plus
+The prerequisites for installing NGINX Plus is already setup so all you need to do is install it.
 
-1. From UDF, open up a Web Shell for your NGINX Plus instance (UDF Component NGINX Plus R33 (Preinstall)).
+1. From UDF, open up a **Web Shell** for your **NGINX Plus R33 (Disconnected)** instance.
 
-1. Install NGINX Plus by running `sudo apt update` followed by `sudo apt install nginx-plus`
+1. Install NGINX Plus by running the commands below.
+    ```shell
+    apt update
+    apt install nginx-plus
+    ```
 
-1. Create your JWT file at `/etc/nginx/license.jwt` using the JWT file you used to license the NGINX Instance Manager in the previous steps. 
-
-`echo '<contents of your JWT file>' > /etc/nginx/license.jwt` 
-
-You can also open a blank file named `/etc/nginx/license.jwt` and paste the contents of the JWT file. 
+1. Create the JWT file at `/etc/nginx/license.jwt` using the JWT you got from MyF5 using your editor of choice. You can
+do this by one of the following ways:
+    - `echo '<contents of your JWT file>' > /etc/nginx/license.jwt`
+    - You can also open a blank file named `/etc/nginx/license.jwt` and paste the contents of the JWT file.
 
 1. Open `/etc/nginx/nginx.conf` using your editor of choice.
 
-1. In the bottom the file, you should notice the `mgmt` section is commented out. Update the config file with the
-following **mgmt** section.
+1. On the bottom the file, you should notice the `mgmt` section is commented out. Update the config file with the
+following **mgmt** section. We will be doing the following:
+    - Set the **usage_report** endpoint to `nim.local` which is our NIM instances
+    - Set a quicker **interval** so we can see the frequency from the NGINX logs.
+    - Disable **ssl_verify**
     ```shell
     mgmt {
       usage_report endpoint=nim.local interval=10m;
@@ -202,24 +228,25 @@ following **mgmt** section.
     > :warning: It is not advisable to disable `ssl_verify`. We are taking the risk here because this is a fully
     disconnected environment.
 
-1. On the top of the `nginx.conf` file, change the `error_log` to `debug`
+1. On the top of the `/etc/nginx/nginx.conf` file, change the `error_log` to `debug`. Below is the example where the
+**error_log** is set to `debug`.
     ```shell
     error_log  /var/log/nginx/error.log debug;
     ```
 
-1. Now save then exit.
+1. You can now save these changes.
 
-1. Go ahead and start nginx
+1. Finally start NGINX Plus.
 
     ```shell
-    sudo systemctl start nginx
+    systemctl start nginx
     ```
 
 1. You should now notice the `info` line from the `/var/log/nginx/error.log` showing the usage report was sent to NIM.
 
     <Collapsible title="Example Output">
     ```shell
-    ubuntu@ip-10-1-1-5:~$ sudo tail -f /var/log/nginx/error.log
+    root@ip-10-1-1-5:~$ tail -f /var/log/nginx/error.log
     2024/10/31 07:20:58 [notice] 9833#9833: using the "epoll" event method
     2024/10/31 07:20:58 [notice] 9833#9833: nginx/1.27.2 (nginx-plus-r33)
     2024/10/31 07:20:58 [notice] 9833#9833: built by gcc 11.4.0 (Ubuntu 11.4.0-1ubuntu1~22.04)
@@ -237,48 +264,63 @@ Great now you've setup your NGINX Plus instance so that it reports to NIM!
 ### Submitting usage report
 
 By this point:
-- NIM is license and activated
-- NGINX Plus R33 is submitting usage reports to NIM
+- NIM is licensed and activated.
+- The initial report is submitted to the F5 Licensing Endpoint.
+- NGINX Plus R33 is installed and is submitting usage reports to NIM.
 
 We now need to submit the usage reports from NIM to the F5 License Server. We will now outline the steps to do this
 below.
 
 1. In UDF, open a **Web Shell** to the Jumphost.
 
-1. Run the following command to initiate the usage report download from NIM.
+1. Run the following command to NIM that starts rendering the usage report.
     ```shell
-    curl -k --location \
+    curl -k --location -s \
       'https://nim.local/api/platform/v1/report/download?format=zip&reportType=telemetry' \
-      --header 'authorization: Basic YWRtaW46UGFzc3dvcmQxMjMh'
+      --header 'accept: application/json' \
+      --header "authorization: Basic $NIM_AUTH_TOKEN" \
+      --header 'referer: https://nim.local/ui/settings/license' | jq
     ```
 
+    <Collapsible title="Example Output">
+
     ```shell
+    root@lab-framework:~$ curl -k --location -s \
+      'https://nim.local/api/platform/v1/report/download?format=zip&reportType=telemetry' \
+      --header 'accept: application/json' \
+      --header "authorization: Basic $NIM_AUTH_TOKEN" \
+      --header 'referer: https://nim.local/ui/settings/license' | jq
+
     {
       "telemetry":"Report generation in progress"
     }
     ```
+    </Collapsible>
 
-1. After a few seconds, run the following command below to download the report on to the Jumphost. In the example here,
-the usage report is downloaded as a zip file named `usage.zip`.
+1. After a few seconds, run the following command below to download the report on to the **Jumphost**. In the example
+here, the usage report is downloaded as a zip file named `usage.zip`.
     ```shell
     curl -k --location \
       'https://nim.local/api/platform/v1/report/download?format=zip&reportType=telemetry&telemetryAction=download' \
-      --header 'authorization: Basic YWRtaW46UGFzc3dvcmQxMjMh' --output usage.zip
+      --header 'accept: */*' \
+      --header "authorization: Basic $NIM_AUTH_TOKEN" \
+      --output usage.zip
     ```
 
-1. Run the following command to upload the report to the F5 License Server.
+1. Run the following command to upload the report to the F5 License Endpoint.
     ```shell
-    curl --location 'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk' \
-    --header "Authorization: Bearer $LICENSE" \
-    --form 'file=@"usage.zip"'
+    curl --location -s \
+      'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk' \
+      --header "Authorization: Bearer $LICENSE" \
+      --form 'file=@"usage.zip"' | jq
     ```
 
     <Collapsible title="Example Output">
     ```shell
-    curl --location 'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk' \
+    root@lab-framework:~$ curl --location -s \
+      'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk' \
       --header "Authorization: Bearer $LICENSE" \
-      --form 'file=@"usage.zip"'
-
+      --form 'file=@"usage.zip"' | jq
     {
       "statusLink":"/ee/v1/entitlements/telemetry/bulk/status/706812c5-32a7-41a4-bdf9-fec806b8f221",
       "pollIntervalInSeconds":30,
@@ -287,18 +329,20 @@ the usage report is downloaded as a zip file named `usage.zip`.
     ```
     </Collapsible>
 
-1. Now check on status of the uploaded report. The **report_id** here can be found from the output of the previous
-command in the form of another UUID at the end of the "statusLink" value.
+1. Now check on status of the uploaded report. Remember to swap out **\<report-id\>** for the **UUID** you got from
+the response when you submitted the usage report to the F5 Licensing Endpoint.
 
     ```shell
-    curl --location 'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk/status/<report_id>' \
-    --header "Authorization: Bearer $LICENSE"
+    curl --location -s \
+      'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk/status/<report_id>' \
+      --header "Authorization: Bearer $LICENSE"
     ```
 
     <Collapsible title="Example Output">
     ```shell
-    curl --location 'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk/status/706812c5-32a7-41a4-bdf9-fec806b8f221' \
-    --header "Authorization: Bearer $LICENSE"
+    curl --location -s \
+      'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk/status/706812c5-32a7-41a4-bdf9-fec806b8f221' \
+      --header "Authorization: Bearer $LICENSE"
     {
       "percentageComplete": 100,
       "percentageSuccessful": 100,
@@ -308,30 +352,32 @@ command in the form of another UUID at the end of the "statusLink" value.
     ```
     </Collapsible>
 
-1. The response from above should indicate the status report is ready for download.Run the following command to download
-the status report from F5 License Server. The example command below will download the report named
-`acknowledgement.zip`. Remember to swap in the UUID for \<report_id\>.
+1. The response from above should indicate the status report is ready for download. Run the following command to
+download the license acknowledgement report from F5 Licensing Endpoint. The example command below will download the
+report named `acknowledgement.zip`. Remember to swap in the **UUID** for **\<report_id\>**.
 
     ```shell
     curl --location \
       'https://product.apis.f5.com/ee/v1/entitlements/telemetry/bulk/download/<report_id>' \
-      --header "Authorization: Bearer $LICENSE" --output acknowledgement.zip
+      --header "Authorization: Bearer $LICENSE" \
+      --output acknowledgement.zip
     ```
 
 1. Once your status report is downloaded, run the following command to upload it to NIM.
 
     ```shell
-    curl -k --location 'https://nim.local/api/platform/v1/report/upload' \
-    --header 'Authorization: Basic YWRtaW46UGFzc3dvcmQxMjMh' \
-    --form 'file=@"acknowledgement.zip"'
+    curl -k --location -s \
+      'https://nim.local/api/platform/v1/report/upload' \
+      --header "Authorization: Basic $NIM_AUTH_TOKEN" \
+      --form 'file=@"acknowledgement.zip"' | jq
     ```
 
     <Collapsible title="Example Output">
     ```shell
-    curl -k --location 'https://nim.local/api/platform/v1/report/upload' \
-    --header 'Authorization: Basic YWRtaW46UGFzc3dvcmQxMjMh' \
-    --form 'file=@"acknowledgement.zip"'
-
+    ubuntu@lab-framework:~$ curl -k --location -s \
+      'https://nim.local/api/platform/v1/report/upload' \
+      --header "Authorization: Basic $NIM_AUTH_TOKEN" \
+      --form 'file=@"acknowledgement.zip"' | jq
     {
       "manifest":"..",
       "message":"Report uploaded successfully."
@@ -339,14 +385,22 @@ the status report from F5 License Server. The example command below will downloa
     ```
     </Collapsible>
 
-You now submitted the usage report to F5! You will need report the usage report at most 180 days.
+You now submitted the usage report to F5! You will need do this at most 180 days.
+
+> We also went through the manual steps for:
+> - Downloading usage report from NIM nd submitting it to the F5 Licensing Endpoint
+> - Download the License Acknowledgment report from the F5 Licensing Endpoint and uploading it to NIM.
+>
+> There is an available script to do these manual steps in the
+[Report usage to F5 in a disconnected environment](https://docs.nginx.com/nginx-instance-manager/disconnected/report-usage-disconnected-deployment/)
+guide from the NGINX Instance Manager documents.
 
 ## Summary
 
 After completing this lab, you are now able to:
+1. Understand activating NIM and submitting the initial usage report to F5 Licensing Endpoint
 1. Configure NGINX Plus to use NIM as the endpoint
-1. Be able and understand the full process that must happen when submitting the usage report to F5 in a disconnected
-environment
+1. Understand the process that must happen when submitting the usage report to the F5 Licensing Endpoint
 
 ## Conclusion
 

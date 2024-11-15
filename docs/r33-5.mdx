@@ -10,7 +10,7 @@ In this lab, we will be going through a scenario where you will need to upgrade 
 will introduce a breaking change.
 
 The goal of this section will be to
-- become familiar of the upgrade process to R33 from an older NGINX Plus version.
+- become familiar with the upgrade process to R33 from an older NGINX Plus version.
 
 ## FixIt Lab
 
@@ -23,7 +23,7 @@ Let's now go through this scenario where you will upgrade a previous R32 release
     sudo apt upgrade nginx-plus
     ```
 
-1. You will note the following output indicting **nginx-plus** wasn't upgraded.
+1. You will note the following output indicating **nginx-plus** wasn't upgraded.
     ```shell
     ----------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ portion of the lab.
 1. Go ahead an create a blank `/etc/nginx/license.jwt` file per instructions from the solution article by running
 the following command.
 
-> Since we are using the default nginx configuration path, we put the `license.jwt` in that directory. If you are using
+> Since we are using the default nginx configuration path, we put the `license.jwt` file in that directory. If you are using
 a custom one, the `license.jwt` should be place in your custom path.
 
     ```shell
@@ -83,8 +83,8 @@ ubuntu@ip-10-1-1-4:~$ sudo tail -f /var/log/nginx/error.log
 2024/11/08 18:29:45 [error] 19725#19725: invalid license token
 ```
 
-There is not a valid license so **nginx** does not started. Go ahead and update `/etc/nginx/license.jwt` with your valid
-JWT you got in a previous section.
+There is not a valid license so **nginx** does not start. Go ahead and update `/etc/nginx/license.jwt` with your valid
+JWT you got in the previous section.
 
 Once that is completed, restart **nginx**.
 
@@ -104,15 +104,15 @@ ubuntu@ip-10-1-1-4:~$ sudo tail -f /var/log/nginx/error.log
 2024/11/08 18:35:11 [notice] 19816#19816: start worker process 19818
 ```
 
-And it finally starts! You can not proceed to configure your NGINX Plus instance.
+And it finally starts! You can now proceed to configuring your NGINX Plus instance.
 
 </Collapsible>
 
 
 ### Upgrading note
 
-If you've upgrade to R33 but **nginx* isn't able to reload because of an unknown directive that is new starting on R33,
-try restarting instead of reloading. You may encounter a case where the **nginx** binary running in memory wasn't update
+If you've upgraded to R33 but **nginx* isn't able to reload because of an unknown directive that is new starting on R33,
+try restarting instead of reloading. You may encounter a case where the **nginx** binary running in memory wasn't updated
 yet the binary you just installed is updated.
 
 ## Summary
@@ -122,4 +122,4 @@ After completing this lab, you are now able to:
 
 ## Conclusion
 
-Thank you for you time for this upskill session for NGINX Plus R33.
+Thank you for your time on this upskill session for NGINX Plus R33.

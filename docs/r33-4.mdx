@@ -12,10 +12,10 @@ organization's security policy requires these two components to be disconnected 
 
 > NOTE: This lab is created in UDF and all components are connected to the Management network, which is routed
 to the internet, by default. We will be going through the exercise here as if NIM and NGINX Plus are disconnected but
-do know they really do have internet connectivity in this lab.
+know they really have internet connectivity in this lab.
 
-The diagram below shows the network overview of this portion of this lab. Again, NGINX Plus and NIM here really have
-internet connectivity but will go through as if they do not.
+The diagram below shows the network overview of this portion of the lab. Again, NGINX Plus and NIM do have
+internet connectivity but we will go through the lab as if they do not.
 
 ![Disconnected Environment](media/interactive/1.png)
 
@@ -42,8 +42,8 @@ Let's get into this. An overview of steps we will be doing in this lab are liste
 1. Handle submitting the usage report from a **Jumphost**, which has internet connectivity, to the F5 Licensing Endpoint
 
 > The extra manual steps for submitting the usage report is automatically handled if NGINX Plus or NIM have internet
-connectivity. But because we are covering a case where NGINX and NIM are in restricted network, you must manually
-complete these steps from a device that have internet connectivity.
+connectivity. But because we are covering a case where NGINX and NIM are in a restricted network, you must manually
+complete these steps from a device that has internet connectivity.
 
 > You have up to 180 days to submit a report to F5.
 
@@ -53,10 +53,10 @@ Why is NIM being used in this scenario? Remember NGINX Plus R33 will require usa
 NIM endpoint. Because NGINX Plus is air-gapped, we must use NIM as the endpoint.
 
 Why do we have to activate NIM? The scenario here also requires NIM to be air-gapped as well as NGINX Plus. The
-license activation process does happen automatically when it is connected to the internet but for the case here, we must
-manually handle the activation process. The steps here goes through those manual steps.
+license activation process does happen automatically when it is connected to the internet but for this use case, we must
+manually handle the activation process. The steps here go through those manual steps.
 
-This lab already has NIM install with a license but it isn't activated. Let's look at the NIM UI to confirm this is
+This lab already has NIM installed with a license but it isn't activated. Let's look at the NIM UI to confirm it is
 licensed but not activated.
 
 1. In your UDF Deployment, select the Component tab then find **NGINX Instance Manager 2.18**
@@ -242,7 +242,7 @@ following **mgmt** section. We will be doing the following:
     systemctl start nginx
     ```
 
-1. You should now notice the `info` line from the `/var/log/nginx/error.log` showing the usage report was sent to NIM.
+1. You should now notice the `info` line in `/var/log/nginx/error.log` showing the usage report was sent to NIM.
 
     <Collapsible title="Example Output">
     ```shell
@@ -385,11 +385,11 @@ report named `acknowledgement.zip`. Remember to swap in the **UUID** for **\<rep
     ```
     </Collapsible>
 
-You now submitted the usage report to F5! You will need do this at most 180 days.
+You now submitted the usage report to F5! You will need to do this at least every 180 days.
 
 > We also went through the manual steps for:
-> - Downloading usage report from NIM nd submitting it to the F5 Licensing Endpoint
-> - Download the License Acknowledgment report from the F5 Licensing Endpoint and uploading it to NIM.
+> - Downloading the usage report from NIM and submitting it to the F5 Licensing Endpoint
+> - Downloading the License Acknowledgment report from the F5 Licensing Endpoint and uploading it to NIM.
 >
 > There is an available script to do these manual steps in the
 [Report usage to F5 in a disconnected environment](https://docs.nginx.com/nginx-instance-manager/disconnected/report-usage-disconnected-deployment/)
@@ -397,7 +397,7 @@ guide from the NGINX Instance Manager documents.
 
 ## Logs
 
-Let's now look at logs. There are two components where usage reporting logs may be of use when it comes to
+Let's now look at the logs. There are two components where usage reporting logs may be of use when it comes to
 troubleshooting.
 
 1. NGINX Plus Instance
@@ -430,7 +430,7 @@ Another area where you can look for log messages related to usage reports can be
 the log level to see them in the NIM logs. For the example here, I used the default log location, so it in `/etc/nms/nms.log`
 
 If there are any issues, you will see **WARN** and **INFO** log messages coming from **DPM**. In my example here, I
-changed the time on the NGINX Plus instance to about 100 days in the future cause issues when times are checked.
+changed the time on the NGINX Plus instance to about 100 days in the future to cause issues when the times are checked.
 
 ```log
 Nov 14 20:22:56 nim <DPM>[2667]: 2024-11-14T20:22:56.303Z	INFO	e3f55948-d3d7-4ff5-bcbc-96315529c988	usage/impl.go:200	failed to parse request body: bad request: end report time should not be before start time

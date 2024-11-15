@@ -395,12 +395,61 @@ You now submitted the usage report to F5! You will need do this at most 180 days
 [Report usage to F5 in a disconnected environment](https://docs.nginx.com/nginx-instance-manager/disconnected/report-usage-disconnected-deployment/)
 guide from the NGINX Instance Manager documents.
 
+## Logs
+
+Let's now look at logs. There are two components where usage reporting logs may be of use when it comes to
+troubleshooting.
+
+1. NGINX Plus Instance
+1. NGINX Instance Manager
+
+### NGINX Plus
+
+Any logs messages relating to submitting usage reports can be found in the **error_log** directive. Since I am using the
+default values, it is located in `/var/log/nginx/error.log`.
+
+If there are any issues when submitting the usage report, you will see **error** level log lines.
+
+You may also see **alert** level logs along with the error. Below is an example of an error when the NGINX Plus instance
+tries to submit the report.
+
+```log
+2025/04/03 20:53:45 [error] 2234#2234: certificate verify error: (10:certificate has expired) for 3.135.72.139:443 during usage report
+2025/04/03 20:53:45 [alert] 2234#2234: cannot send usage report; traffic processing will degrade in 59 days
+```
+
+When the usage report is successfully submitted, you will see **info** level log messages.
+
+```log
+2024/12/04 20:53:25 [info] 2234#2234: usage report was sent
+```
+
+### NGINX Instance Manager
+
+Another area where you can look for log messages related to usage reports can be found on NIM. You may need to adjust
+the log level to see them in the NIM logs. For the example here, I used the default log location, so it in `/etc/nms/nms.log`
+
+If there are any issues, you will see **WARN** and **INFO** log messages coming from **DPM**. In my example here, I
+changed the time on the NGINX Plus instance to about 100 days in the future cause issues when times are checked.
+
+```log
+Nov 14 20:22:56 nim <DPM>[2667]: 2024-11-14T20:22:56.303Z	INFO	e3f55948-d3d7-4ff5-bcbc-96315529c988	usage/impl.go:200	failed to parse request body: bad request: end report time should not be before start time
+Nov 14 20:22:56 nim <DPM>[2667]: 2024-11-14T20:22:56.303Z	WARN	e3f55948-d3d7-4ff5-bcbc-96315529c988	usage/impl.go:148	NGINX usage tracking: bad request: end report time should not be before start time, entry not created
+```
+
+You are also able to see **DEBUG** log messages when a report is successfully submitted to NIM from NGINX Plus.
+
+```log
+Nov 14 20:23:26 nim <DPM>[2667]: 2024-11-14T20:23:26.344Z	DEBUG	9813c201-6951-4926-98c1-c743fc17f1fa	usage/impl.go:163	NGINX usage tracking: new report with &{Version:1.27.2 Hostname:<nil> UUID:2159d15f-00d6-6684-8da1-a9680b2e5765 NAP:inactive DOS: ProductType:nginx-plus K8sClusterID:<nil> K8sInstallationID:<nil> JWTTokenID:0xc0011bb080 Time:2024-11-14 20:23:26.344311727 +0000 UTC m=+85.406709833}
+```
+
 ## Summary
 
 After completing this lab, you are now able to:
 1. Understand activating NIM and submitting the initial usage report to F5 Licensing Endpoint
 1. Configure NGINX Plus to use NIM as the endpoint
 1. Understand the process that must happen when submitting the usage report to the F5 Licensing Endpoint
+1. Understand log locations for NGINX Instance and NIM for troubleshooting
 
 ## Conclusion
 

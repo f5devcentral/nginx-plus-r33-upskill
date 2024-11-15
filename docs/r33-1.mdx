@@ -100,7 +100,6 @@ generate the report and submit it to F5. The usage report contains the following
 - Bytes received from and sent to upstreams (http, stream)
 - Number of accepted connections (http, stream)
 - Number of workers running at the time of report
-- K8s nodes count (in case of NIC)
 - NGINX Uptime (in seconds)
 - NGINX Reloads during uptime
 - Collection start and end time.
@@ -199,11 +198,13 @@ The diagram of the lab environment is shown below.
 
 ![UDF Lab Environment](media/intro/2.png)
 
-A total of 4 systems will be available.
+This UDF Blue Print contains the following systems.
 1. Jumphost
-1. NGINX Plus Instance R33 (for fresh R33 install)
+1. (Connected) NGINX Plus Instance R33 (for fresh R33 install)
+1. (Disconnected) NGINX Plus Instance R33 (for fresh R33 install)
+1. (Connected) NGINX Instance Manager 2.18
+1. (Disconnected) NGINX Instance Manager 2.18
 1. NGINX Plus Instance R32 (for R33 upgrade)
-1. NGINX Instance Manager
 
 > :warning: **Note:** The UDF environment does not support a true disconnected environment. So when we do the
 interactive lab, we will go through steps as if NGINX Plus and NIM are fully disconnected to the internet but do note
@@ -222,6 +223,17 @@ In each of the labs, we will be going over the different ways of handing E&V:
 1. NGINX Plus connected directly to F5 Licensing Endpoint
 1. Air-gapped environment where NGINX Plus is connected to NIM
 1. Handing upgrade to NGINX Plus R33
+
+---
+
+## Additional information
+
+We are basing most of the information of this lab from the following sources.
+- [NGINX Plus R33 Pre-release Guidance](https://docs.nginx.com/solutions/)
+- [NGINX Plus R33 Subscription License](https://docs.nginx.com/solutions/about-subscription-licenses/)
+- [NIM - Offline Installation](https://docs.nginx.com/nginx-instance-manager/disconnected/offline-install-guide/)
+- [NIM - Offline License and Activation](https://docs.nginx.com/nginx-instance-manager/disconnected/add-license-disconnected-deployment/)
+- [NIM - Report Usage Offline](https://docs.nginx.com/nginx-instance-manager/disconnected/report-usage-disconnected-deployment/)
 
 ## Up next
 

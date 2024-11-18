@@ -1,6 +1,6 @@
 ---
-title: Interactive Lab
-description: License NGINX Plus in a disconnected environment
+title: Interactive Lab Part 2
+description: Disconnected NGINX Plus E&V with disconnected NIM
 order: 4
 ---
 
@@ -97,7 +97,7 @@ will use this token.
 report to a file named `license_report.zip`.
     ```shell
     curl -k --location \
-      'https://nim.local/api/platform/v1/report/download?format=zip&reportType=initial&telemetryAction=download' \
+      'https://nim-disconnected.local/api/platform/v1/report/download?format=zip&reportType=initial&telemetryAction=download' \
       --header "Authorization: Basic $NIM_AUTH_TOKEN" \
       --output license_report.zip
     ```
@@ -164,7 +164,7 @@ the response when you submitted the usage report to the F5 Licensing Endpoint.
 1. Now finally, run the following to upload the license acknowledgment report to NIM.
     ```shell
     curl -k --location -s \
-      'https://nim.local/api/platform/v1/report/upload' \
+      'https://nim-disconnected.local/api/platform/v1/report/upload' \
       --header "Authorization: Basic $NIM_AUTH_TOKEN" \
       --form 'file=@"lic_acknowledgement.zip"' | jq
     ```
@@ -172,7 +172,7 @@ the response when you submitted the usage report to the F5 Licensing Endpoint.
     <Collapsible title="Example Output">
     ```shell
     root@lab-framework:~$ curl -k --location -s \
-      'https://nim.local/api/platform/v1/report/upload' \
+      'https://nim-disconnected.local/api/platform/v1/report/upload' \
       --header "Authorization: Basic $NIM_AUTH_TOKEN" \
       --form 'file=@"lic_acknowledgement.zip"' | jq
 
@@ -198,7 +198,7 @@ Let's proceed to setup NGINX Plus so the endpoint is going to NIM instead of the
 
 The prerequisites for installing NGINX Plus is already setup so all you need to do is install it.
 
-1. From UDF, open up a **Web Shell** for your **NGINX Plus R33 (Disconnected)** instance.
+1. From UDF, open up a **Web Shell** for your **NGINX Plus R33 (Part 2)** instance.
 
 1. Install NGINX Plus by running the commands below.
     ```shell
@@ -215,12 +215,12 @@ do this by one of the following ways:
 
 1. On the bottom the file, you should notice the `mgmt` section is commented out. Update the config file with the
 following **mgmt** section. We will be doing the following:
-    - Set the **usage_report** endpoint to `nim.local` which is our NIM instances
+    - Set the **usage_report** endpoint to `nim-disconnected.local` which is our NIM instances
     - Set a quicker **interval** so we can see the frequency from the NGINX logs.
     - Disable **ssl_verify**
     ```shell
     mgmt {
-      usage_report endpoint=nim.local interval=10m;
+      usage_report endpoint=nim-disconnected.local interval=10m;
       ssl_verify off;
     }
     ```
@@ -276,20 +276,20 @@ below.
 1. Run the following command to NIM that starts rendering the usage report.
     ```shell
     curl -k --location -s \
-      'https://nim.local/api/platform/v1/report/download?format=zip&reportType=telemetry' \
+      'https://nim-disconnected.local/api/platform/v1/report/download?format=zip&reportType=telemetry' \
       --header 'accept: application/json' \
       --header "authorization: Basic $NIM_AUTH_TOKEN" \
-      --header 'referer: https://nim.local/ui/settings/license' | jq
+      --header 'referer: https://nim-disconnected.local/ui/settings/license' | jq
     ```
 
     <Collapsible title="Example Output">
 
     ```shell
     root@lab-framework:~$ curl -k --location -s \
-      'https://nim.local/api/platform/v1/report/download?format=zip&reportType=telemetry' \
+      'https://nim-disconnected.local/api/platform/v1/report/download?format=zip&reportType=telemetry' \
       --header 'accept: application/json' \
       --header "authorization: Basic $NIM_AUTH_TOKEN" \
-      --header 'referer: https://nim.local/ui/settings/license' | jq
+      --header 'referer: https://nim-disconnected.local/ui/settings/license' | jq
 
     {
       "telemetry":"Report generation in progress"
@@ -301,7 +301,7 @@ below.
 here, the usage report is downloaded as a zip file named `usage.zip`.
     ```shell
     curl -k --location \
-      'https://nim.local/api/platform/v1/report/download?format=zip&reportType=telemetry&telemetryAction=download' \
+      'https://nim-disconnected.local/api/platform/v1/report/download?format=zip&reportType=telemetry&telemetryAction=download' \
       --header 'accept: */*' \
       --header "authorization: Basic $NIM_AUTH_TOKEN" \
       --output usage.zip
@@ -367,7 +367,7 @@ report named `acknowledgement.zip`. Remember to swap in the **UUID** for **\<rep
 
     ```shell
     curl -k --location -s \
-      'https://nim.local/api/platform/v1/report/upload' \
+      'https://nim-disconnected.local/api/platform/v1/report/upload' \
       --header "Authorization: Basic $NIM_AUTH_TOKEN" \
       --form 'file=@"acknowledgement.zip"' | jq
     ```
@@ -375,7 +375,7 @@ report named `acknowledgement.zip`. Remember to swap in the **UUID** for **\<rep
     <Collapsible title="Example Output">
     ```shell
     ubuntu@lab-framework:~$ curl -k --location -s \
-      'https://nim.local/api/platform/v1/report/upload' \
+      'https://nim-disconnected.local/api/platform/v1/report/upload' \
       --header "Authorization: Basic $NIM_AUTH_TOKEN" \
       --form 'file=@"acknowledgement.zip"' | jq
     {
@@ -397,24 +397,23 @@ guide from the NGINX Instance Manager documents.
 
 ## Logs
 
-Let's now look at the logs. There are two components where usage reporting logs may be of use when it comes to
-troubleshooting.
+Let's now look at the logs. There are two components where you can view usage reporting logs when troubleshooting.
 
 1. NGINX Plus Instance
 1. NGINX Instance Manager
 
 ### NGINX Plus
 
-Any logs messages relating to submitting usage reports can be found in the **error_log** directive. Since I am using the
-default values, it is located in `/var/log/nginx/error.log`.
+Any logs messages relating to submitting usage reports from the NGINX Plus instance to NIM can be found in the
+**error_log** directive. Since I am using the default values, it is located in `/var/log/nginx/error.log`.
 
 If there are any issues when submitting the usage report, you will see **error** level log lines.
 
 You may also see **alert** level logs along with the error. Below is an example of an error when the NGINX Plus instance
-tries to submit the report.
+failed to submit a report to NIM because it is unable to verify the TLS certificate.
 
 ```log
-2025/04/03 20:53:45 [error] 2234#2234: certificate verify error: (10:certificate has expired) for 3.135.72.139:443 during usage report
+2025/04/03 20:53:45 [error] 2234#2234: certificate verify error: (21:unable to verify the first certificate) for 10.1.1.8:443 during usage report
 2025/04/03 20:53:45 [alert] 2234#2234: cannot send usage report; traffic processing will degrade in 59 days
 ```
 
@@ -429,8 +428,9 @@ When the usage report is successfully submitted, you will see **info** level log
 Another area where you can look for log messages related to usage reports can be found on NIM. You may need to adjust
 the log level to see them in the NIM logs. For the example here, I used the default log location, so it in `/etc/nms/nms.log`
 
-If there are any issues, you will see **WARN** and **INFO** log messages coming from **DPM**. In my example here, I
-changed the time on the NGINX Plus instance to about 100 days in the future to cause issues when the times are checked.
+If there are any issues, you will see **WARN** and **INFO** log messages from **DPM**. In my example here, I
+changed the time on the NGINX Plus instance to about 100 days in the future. This causes issues when the F5 Licensing
+Endpoint check timestamps.
 
 ```log
 Nov 14 20:22:56 nim <DPM>[2667]: 2024-11-14T20:22:56.303Z	INFO	e3f55948-d3d7-4ff5-bcbc-96315529c988	usage/impl.go:200	failed to parse request body: bad request: end report time should not be before start time
@@ -451,7 +451,7 @@ After completing this lab, you are now able to:
 1. Understand the process that must happen when submitting the usage report to the F5 Licensing Endpoint
 1. Understand log locations for NGINX Instance and NIM for troubleshooting
 
-## Conclusion
+## Up next
 
 Now that you understand how to configure the reporting endpoint, let's proceed to the next lab where we will work on
-a FixIt lab. [Click here](r33-4.mdx) to proceed to that.
+a FixIt lab. [Click here](r33-6.mdx) to proceed to that.

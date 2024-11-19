@@ -7,18 +7,24 @@ order: 4
 ## Introduction
 
 In this lab, we will be going through a scenario where the NGINX Plus instance is in a network restricted environment.
-Since it does not have internet connectivity, it needs to be configured to use NIM and the usage report endpoint. This
+Since it does not have internet connectivity, it needs to be configured to use NIM as the usage report endpoint. This
 lab will go through configuring this environment where NIM has internet connectivity.
 
 The goal of this section will be to:
 - Become familiar configuring NGINX Plus R33 with NIM as the usage report endpoint.
 
-The diagram below shows the component view and a main workflow one would do from a Jumphost.
+The diagram below shows the component view of this lab.
 
 ![Connected NIM disconnected NGINX components](media/interactive/8.png)
 
 > **Note:** Although we are going through this lab as if NGINX Plus is in a network restricted environment, it really
-does have internet access.
+does have internet access in this UDF environment.
+
+## Lab environment notes
+
+> Windows users need to **Ctrl** + **Shift** + **v** to paste commands into the *Web Shell*.
+
+Firefox does not handle **Web Shell** well. The current line drops below the bottom of the screen making it difficult to work with.
 
 ## Interactive Lab Part 1
 
@@ -26,20 +32,23 @@ Let's now go through this scenario where you will configure NGINX Plus so that t
 
 ### NIM
 
-NIM is already installed and licensed so no need to configure anything here. You can log in NIM UI via UDF to check
+NIM is already installed and licensed so no need to configure anything here. You can log in the NIM UI via UDF to check
 the status.
 
-1. Open up a Web Shell to the **NGINX Instance Manager (Connected)** instance in UDF.
+1. Open up the **UI** to the **NGINX Instance Manager (Connected)** instance in UDF. The log in credentials is
+admin / Password123!
+![Connected NIM Licensed UI](media/interactive/10.png)
 
-1. You can navigate to License Setting by selecting the Setting icon on top. You should be taken to the Licenses page.
+1. You can navigate to License Setting by selecting the Setting icon on top. You should be taken to the Licenses page
+shown below.
 ![Connected NIM Licensed](media/interactive/9.png)
 
 ### NGINX Plus R33
 
 Let's now proceed to installing NGINX Plus R33 and configuring the usage report endpoint to NIM instead of the default
-F5 Saas Endpoint.
+F5 SaaS endpoint.
 
-The prerequisites for installing NGINX Plus is already setup so all you need to do is install it.
+The prerequisites for installing NGINX Plus is already complete so all you need to do is install it.
 
 1. From UDF, open up a **Web Shell** for your **NGINX Plus R33 (Part 1)** instance.
 
@@ -48,6 +57,8 @@ The prerequisites for installing NGINX Plus is already setup so all you need to 
     apt update
     apt install nginx-plus
     ```
+
+    > Windows users need to **Ctrl** + **Shift** + **v** to paste commands into the *Web Shell*.
 
 1. Create the JWT file at `/etc/nginx/license.jwt` using the JWT you got from MyF5 using your editor of choice. You can
 do this by one of the following ways:
@@ -63,7 +74,7 @@ following **mgmt** section. We will be doing the following:
     - Disable **ssl_verify**
     ```shell
     mgmt {
-      usage_report endpoint=nim-connected.local interval=1m;
+      usage_report endpoint=nim-connected.local interval=30s;
       ssl_verify off;
     }
     ```
@@ -125,6 +136,11 @@ failed to submit a report to NIM because it is unable to verify the TLS certific
 2024/12/18 07:19:40 [alert] 1801#1801: cannot send usage report; traffic processing will degrade in 149 days
 ```
 
+> You will see an error here if there is an issue when NGINX Plus tries to submit its usage report to NIM. In
+my example here, I did not properly configure TLS hence we saw a certificate error.
+
+<br/>
+
 When the usage report is successfully submitted, you will see **info** level log messages. Below is an example of a
 report that was successfully sent to NIM.
 
@@ -132,15 +148,17 @@ report that was successfully sent to NIM.
 2024/12/04 20:53:25 [info] 2234#2234: usage report was sent
 ```
 
-> :warning: You may not be able to force a fail when the NGINX instance submits the report in this scenario where NGINX
-is reporting to NIM. During my testing, I was changing the date to a future date. For example, I ran
-`sudo timedatectl set-ntp no && sudo date -s "+100 day"`.
-
 ### NGINX Instance Manager
 
 Another area where you can look for log messages related to usage reports can be found on NIM. You may need to adjust
-the log level to see them in the NIM logs. For the example here, I used the default log location, so it in
-`/etc/nms/nms.log`.
+NIM's log level setting in `/etc/nms/nms.conf`. Below is an example of NIM's log config. Be sure to restart **nms** if
+you made a change.
+```yaml
+log:
+  level: debug
+```
+
+For the example here, I used the default log location in `/etc/nms/nms.log`.
 
 If there are any issues submitting the usage report from NIM to the F5 Licensing Endpoint, you will see **WARN** and
 **INFO** log messages coming from **DPM**. In my example here, I changed the time on the NGINX Plus instance to about

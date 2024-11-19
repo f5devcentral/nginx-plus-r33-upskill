@@ -10,20 +10,22 @@ In this lab, we will be going through a scenario where you will need to upgrade 
 will introduce a breaking change.
 
 The goal of this section will be to
-- become familiar with the upgrade process to R33 from an older NGINX Plus version.
+- Become familiar with the upgrade process to R33 from an older NGINX Plus version.
 
 ## FixIt Lab
 
 Let's now go through this scenario where you will upgrade a previous R32 release to R33.
 
-1. Open up a Web Shell to the NGINX Plus R32 instance in UDF.
+1. Open up a **Web Shell** to the **NGINX Plus R32 (FixIt)** instance in UDF.
 
 1. Run the following command to upgrade to R33.
     ```shell
-    apt upgrade nginx-plus
+    apt update
+    apt upgrade -y nginx-plus
     ```
 
 1. You will note the following output indicating **nginx-plus** wasn't upgraded.
+
     ```shell
     ----------------------------------------------------------------------
 
@@ -36,6 +38,9 @@ Let's now go through this scenario where you will upgrade a previous R32 release
 
     ----------------------------------------------------------------------
     ```
+
+    > Scroll up on our output if you do not see the above message in your console. There may be other packages that
+    were updated.
 
 1. Because this is a breaking change, you must take steps before you are allowed to complete the upgrade process.
 Information relating to this is found in the URL of the output above. We will use the content from that page in this
@@ -53,7 +58,7 @@ a custom one, the `license.jwt` should be place in your custom path.
 
 1. Once that file is in place, re-run your upgrade command.
     ```shell
-    apt upgrade nginx-plus
+    apt upgrade -y nginx-plus
     ```
 
 1. You may see the following screens during the upgrade process. When you see them, select *Tab* then *Enter* to
@@ -65,7 +70,7 @@ proceed.
 
 1. Now you've upgraded **nginx-plus**! Go ahead and run `curl localhost`. You will notice you see a `Connection refused`.
     ```shell
-    ubuntu@ip-10-1-1-4:~$ curl localhost
+    root@plus-fixit:/# curl localhost
     curl: (7) Failed to connect to localhost port 80 after 0 ms: Connection refused
     ```
 
@@ -78,20 +83,20 @@ Is **nginx** started and why?
 The first spot to look are the **nginx** logs. Notice the following line.
 
 ```shell
-root@ip-10-1-1-4:~$ tail -f /var/log/nginx/error.log
+root@plus-fixit:/# tail -f /var/log/nginx/error.log
 
 2024/11/08 18:29:45 [error] 19725#19725: invalid license token
 ```
 
-There is not a valid license so **nginx** does not start. Go ahead and update `/etc/nginx/license.jwt` with your valid
+There is not a valid license so **nginx** did not start. Go ahead and update `/etc/nginx/license.jwt` with your valid
 JWT you got in the previous section.
 
 Once that is completed, restart **nginx**.
 
 ```shell
-root@ip-10-1-1-4:~$ systemctl restart nginx
+root@plus-fixit:/# systemctl restart nginx
 
-root@ip-10-1-1-4:~$ tail -f /var/log/nginx/error.log
+root@plus-fixit:/# tail -f /var/log/nginx/error.log
 2024/11/08 18:29:45 [notice] 592#592: exit
 2024/11/08 18:29:45 [error] 19725#19725: invalid license token
 2024/11/08 18:35:11 [notice] 19815#19815: using the "epoll" event method
@@ -104,7 +109,23 @@ root@ip-10-1-1-4:~$ tail -f /var/log/nginx/error.log
 2024/11/08 18:35:11 [notice] 19816#19816: start worker process 19818
 ```
 
-And it finally starts! You can now proceed to configuring your NGINX Plus instance.
+And it finally starts!
+
+Let's now confirm you can `curl`.
+
+```shell
+root@plus-fixit:/# curl localhost -I
+HTTP/1.1 200 OK
+Server: nginx/1.27.2
+Date: Tue, 19 Nov 2024 05:40:31 GMT
+Content-Type: text/html
+Connection: keep-alive
+Expires: Tue, 19 Nov 2024 05:40:30 GMT
+Cache-Control: no-cache
+
+```
+
+Success! You can now proceed to configuring your NGINX Plus instance depending which environment you are in.
 
 </Collapsible>
 

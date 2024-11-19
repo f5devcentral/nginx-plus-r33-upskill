@@ -6,35 +6,58 @@ order: 3
 
 ## Introduction
 
-We will be going through a demo where you are in an environment connected to the internet. You can either:
-
-1. Configure NGINX Plus to submit usage report directly to the F5 license server
-1. Configure NGINX Plus to submit usage report to NGINX Instance Manager (NIM) which will submit the report to the F5
-license server
-
-This demo video will go through option 1. Shown below is a component diagram that shows an overview of how the
-usage report is submitted.
+We will be going through a demo where you are in an environment connected to the internet. And because of this, we
+configure NGINX Plus to submit usage reports directly to the F5 licensing endpoint.
 
 ![NGINX Plus connected to internet](media/demo/1.png)
 
 ## Demo Lab
 
-Remember there are two areas introduced in NGINX Plus R33
+Remember there are two areas introduced in NGINX Plus R33:
 1. You must have a valid JWT and that JWT must be within the 90-day grace period for NGINX to start.
 1. Once NGINX is started, a report must be submitted with an interval of at most 180 days.
 
 This demo video will show the following parts:
-1. Configuring NGINX Plus to connect to the F5 license server
-1. Show the new NGINX Plus behavior in regards to the JWT license.
-    - NGINX Plus startup without a JWT.
-    - NGINX Plus behavior as the expiration date nears.
-1. Show NGINX Plus behavior in regards to submitting the usage report.
+1. Configuring NGINX Plus to connect to the F5 license endpoint
+1. Show the new NGINX Plus behavior in regards to the JWT license
+    - NGINX Plus startup without a JWT
+    - NGINX Plus behavior as the expiration date nears
+1. Show NGINX Plus behavior in regards to submitting the usage report
     - NGINX Plus behavior when a failure occurs when submitting the usage report but you are within the 180-day grace
-    period.
-    - NGINX Plus behavior after the 180-day grace period.
+    period
+    - NGINX Plus behavior after the 180-day grace period
 
-> TODO: This need to open a new window because you cannot click back.
-[PLACEHOLDER Video link](https://f5.sharepoint.com/:v:/s/gscoe/ESHEZ24sDuRBpIpjz6thMNsBTZLcFCuuvujokU4pH_qDdw?e=zBGEFd)
+<br/>
+
+Click on the link below which will take you to the demo video.
+
+[Demo: NGINX R33 Instance with Internet Connectivity](https://f5u.csod.com/ui/lms-learning-details/app/video/77086780-e0ce-4907-8fbb-43cb51d1836c)
+
+> You must be logged into [LearnF5](https://f5u.csod.com/) to access it.
+
+### NGINX Plus R33 on cloud
+
+Clouds such as AWS and Azure have a subscription model in place so you will not need to worry about Entitlement &
+Visibility (E&V). Reporting is also automatically disabled.
+
+### NGINX Plus R33 in container
+
+There are available environment variables relating to E&V when running NGINX Plus R33 as a container listed below.
+
+| Variable | Default |
+| -------- | ------- |
+| NGINX_LICENSE_ENDPOINT | `product.connect.nginx.com` |
+| NGINX_LICENSE_ENDPOINT_VERIFY | `yes` |
+| NGINX_LICENSE_JWT | `/etc/nginx/license.jwt` |
+
+An example of running NGINX Plus R33 in docker is below.
+
+```shell
+docker run -v $(PWD)/my-nginx-plus.jwt:/etc/nginx/license.jwt \
+  -e NGINX_LICENSE_ENDPOINT="nim.mycompany.local" \
+  -e NGINX_LICENSE_ENDPOINT_VERIFY=off
+  private-registry.nginx.com/nginx-plus/base:nginx-plus-r33-debian-bookworm
+```
 
 ## Summary
 
@@ -43,13 +66,8 @@ After watching this video, you now understand:
 1. Understand NGINX Plus with the JWT.
 1. Understand NGINX Plus behavior with submitting the usage report.
 
-### NGINX Plus R33 on cloud
-
-Clouds such as AWS and Azure have a subscription model in place so you will not need to worry about E&V. Reporting is
-also automatically disabled.
-
 ## Up next
 
 Now that you understand how to configure the reporting endpoint, let's proceed to the next lab where we will walk through
-the a scenario where the NGINX Plus instance does not have internet connectivity but an NGINX Instance Manager
-does have internet connectivity. [Click here](r33-4.mdx) to proceed to that.
+a scenario where the NGINX Plus instance does not have internet connectivity but an NGINX Instance Manager does.
+[Click here](r33-4.mdx) to proceed to that.

@@ -162,7 +162,12 @@ For the example here, I used the default log location in `/etc/nms/nms.log`.
 
 If there are any issues submitting the usage report from NIM to the F5 Licensing Endpoint, you will see **WARN** and
 **INFO** log messages coming from **DPM**. In my example here, I changed the time on the NGINX Plus instance to about
-100 days in the future. This causes issues when the F5 Licensing Endpoint check timestamps.
+100 days in the future, command I ran shown below. This causes issues when the F5 Licensing Endpoint check timestamps.
+```shell
+sudo timedatectl set-ntp no && sudo date -s "+100 day"
+```
+
+Below is an example of the **WARN** and **INFO** log messages that resulted from changing the date.
 
 ```log
 Nov 14 20:22:56 nim <DPM>[2667]: 2024-11-14T20:22:56.303Z	INFO	e3f55948-d3d7-4ff5-bcbc-96315529c988	usage/impl.go:200	failed to parse request body: bad request: end report time should not be before start time

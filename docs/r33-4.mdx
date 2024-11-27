@@ -70,16 +70,21 @@ do this by one of the following ways:
 1. On the bottom the file, you should notice the `mgmt` section is commented out. Update the config file with the
 following **mgmt** section. We will be doing the following:
     - Set the **usage_report** endpoint to `nim-connected.local` which is our NIM instances
-    - Set a quicker **interval** so we can see the frequency from the NGINX logs.
-    - Disable **ssl_verify**
+    - Set a quicker **interval** so we can see the frequency in the NGINX logs.
+    - Enable **ssl_verify** following instructions from the [Configure SSL verification for usage reporting with self-signed
+    certificates](https://docs.nginx.com/nginx-instance-manager/system-configuration/secure-traffic/#trusting-self-signed-certificates)
+    guide.
     ```shell
     mgmt {
-      usage_report endpoint=nim-connected.local interval=30s;
-      ssl_verify off;
+      usage_report endpoint=nim-disconnected.local interval=30s;
+      ssl_trusted_certificate /etc/ssl/nginx/nim.pem;
+      ssl_name manager-server;
     }
     ```
 
-    > :warning: It is not advisable to disable `ssl_verify`.
+    > The SSL configuration in the **mgmt** block uses the self-signed CA certificate and SSL config from NIM which were
+    created during the NIM installation. So here, the CA certificate is copied from NIM to the NGINX Plus R33 instance.
+    That CA certificate is referenced in `ssl_trusted_certificate`. And the `ssl_name` used is **manager-server**.
 
 1. On the top of the `/etc/nginx/nginx.conf` file, change the `error_log` to `debug`. Below is the example where the
 **error_log** is set to `debug`.

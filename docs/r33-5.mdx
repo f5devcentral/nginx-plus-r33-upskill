@@ -6,6 +6,8 @@ order: 5
 
 ## Introduction
 
+:bangbang: Be sure your UDF deployment is using at least *SDE NGINX Plus R33 Upskilling (**version 19**)*
+
 We will be going through an interactive lab where you will be working on a scenario where the NGINX Plus instance
 and the NGINX Instance Manager (NIM) are completely air-gapped. This is a disconnected environment where the
 organization's security policy requires these two components to be disconnected from any access from the internet.
@@ -89,8 +91,8 @@ will use this token.
 1. Run the following command to download the initial usage report. In the example below, we are downloading the license
 report to a file named `license_report.zip`.
     ```shell
-    curl -k --location \
-      'https://nim-disconnected.local/api/platform/v1/report/download?format=zip&reportType=initial&telemetryAction=download' \
+    curl --location \
+      'https://nim-disconnected.lab.f5npi.net/api/platform/v1/report/download?format=zip&reportType=initial&telemetryAction=download' \
       --header "Authorization: Basic $NIM_AUTH_TOKEN" \
       --output license_report.zip
     ```
@@ -156,16 +158,16 @@ the response when you submitted the usage report to the F5 Licensing Endpoint.
 
 1. Now finally, run the following to upload the license acknowledgment report to NIM.
     ```shell
-    curl -k --location -s \
-      'https://nim-disconnected.local/api/platform/v1/report/upload' \
+    curl --location -s \
+      'https://nim-disconnected.lab.f5npi.net/api/platform/v1/report/upload' \
       --header "Authorization: Basic $NIM_AUTH_TOKEN" \
       --form 'file=@"lic_acknowledgement.zip"' | jq
     ```
 
     <Collapsible title="Example Output">
     ```shell
-    root@lab-framework:/# curl -k --location -s \
-      'https://nim-disconnected.local/api/platform/v1/report/upload' \
+    root@lab-framework:/# curl --location -s \
+      'https://nim-disconnected.lab.f5npi.net/api/platform/v1/report/upload' \
       --header "Authorization: Basic $NIM_AUTH_TOKEN" \
       --form 'file=@"lic_acknowledgement.zip"' | jq
 
@@ -209,22 +211,72 @@ do this by one of the following ways:
 
 1. On the bottom the file, you should notice the `mgmt` section is commented out. Update the config file with the
 following **mgmt** section. We will be doing the following:
-    - Set the **usage_report** endpoint to `nim-disconnected.local` which is our disconnected NIM instance.
+    - Set the **usage_report** endpoint to `nim-disconnected.lab.f5npi.net` which is our disconnected NIM instance.
     - Set a quicker **interval** so we can see the frequency in the NGINX logs.
     - Enable **ssl_verify** following instructions from the [Configure SSL verification for usage reporting with self-signed
     certificates](https://docs.nginx.com/nginx-instance-manager/system-configuration/secure-traffic/#trusting-self-signed-certificates)
     guide.
     ```shell
     mgmt {
-      usage_report endpoint=nim-disconnected.local interval=30s;
-      ssl_trusted_certificate /etc/ssl/nginx/nim.pem;
+      usage_report endpoint=nim-disconnected.lab.f5npi.net interval=30s;
+    }
+    ```
+
+    > **NOTE:** This environment uses a valid signed certificate from LetsEncrypt because we want to keep **ssl_verify**
+    enabled. This is already setup and no actions are needed by you but if you want additional details enabling
+    **ssl_verify** with NIM, click on the **Show** button below.
+
+    <Collapsible title="SSL Verify with NIM Details">
+    <br/>
+    The following are two methods of how you can enable **ssl_verify** within this lab environment.
+    * Signed certificates
+    * Self-signed certificates
+
+    #### Signed Certificate
+
+    This lab environment uses a valid signed certificate from **LetsEncrypt**. Of the certificates LetsEncrypt created,
+    two are used: `fullchain.pem` and `privkay.pem`. These files are copied to the NIM instances located in
+    `/etc/nms/letsencrypt`.
+
+    <br/>
+    <br/>
+
+    The NIM ssl certificate configuration is then updated. A snippet of this is shown below.
+
+    ```shell
+    $ cat /etc/nginx/conf.d/nms-http.conf
+    . . .
+    # Main external HTTPS server
+    server {
+        . . .
+
+        ssl_certificate         /etc/nms/letsencrypt/fullchain.pem;
+        ssl_certificate_key     /etc/nms/letsencrypt/privkey.pem;
+    }
+    ```
+
+    <br/>
+    #### Self-Signed Certificate
+
+    If you wish to use a self-signed certificate, follow instructions from the [Configure SSL verification for usage reporting with self-signed
+    certificates](https://docs.nginx.com/nginx-instance-manager/system-configuration/secure-traffic/#trusting-self-signed-certificates)
+    guide.
+    <br/>
+    <br/>
+    The SSL configuration in the **mgmt** block of the NGINX Plus R33 instance uses the self-signed CA certificate and
+    SSL config from NIM which were created during the NIM installation. So here, the CA certificate is copied from NIM
+    to the NGINX Plus R33 instance. That CA certificate is referenced in `ssl_trusted_certificate`. And the `ssl_name`
+    used is **manager-server**. An snippet of the **mgmt** block looks like the following.
+
+    ```shell
+    mgmt {
+      usage_report endpoint=nim-disconnected.local;
+      ssl_trusted_certificate /full/path/to/ca/copied/from/nim/ca.pem;
       ssl_name manager-server;
     }
     ```
 
-    > The SSL configuration in the **mgmt** block uses the self-signed CA certificate and SSL config from NIM which were
-    created during the NIM installation. So here, the CA certificate is copied from NIM to the NGINX Plus R33 instance.
-    That CA certificate is referenced in `ssl_trusted_certificate`. And the `ssl_name` used is **manager-server**.
+    </Collapsible>
 
 1. On the top of the `/etc/nginx/nginx.conf` file, change the `error_log` to `debug`. Below is the example where the
 **error_log** is set to `debug`.
@@ -273,21 +325,21 @@ below.
 
 1. Run the following command which renders the usage report on NIM.
     ```shell
-    curl -k --location -s \
-      'https://nim-disconnected.local/api/platform/v1/report/download?format=zip&reportType=telemetry' \
+    curl --location -s \
+      'https://nim-disconnected.lab.f5npi.net/api/platform/v1/report/download?format=zip&reportType=telemetry' \
       --header 'accept: application/json' \
       --header "authorization: Basic $NIM_AUTH_TOKEN" \
-      --header 'referer: https://nim-disconnected.local/ui/settings/license' | jq
+      --header 'referer: https://nim-disconnected.lab.f5npi.net/ui/settings/license' | jq
     ```
 
     <Collapsible title="Example Output">
 
     ```shell
-    root@lab-framework:/# curl -k --location -s \
-      'https://nim-disconnected.local/api/platform/v1/report/download?format=zip&reportType=telemetry' \
+    root@lab-framework:/# curl --location -s \
+      'https://nim-disconnected.lab.f5npi.net/api/platform/v1/report/download?format=zip&reportType=telemetry' \
       --header 'accept: application/json' \
       --header "authorization: Basic $NIM_AUTH_TOKEN" \
-      --header 'referer: https://nim-disconnected.local/ui/settings/license' | jq
+      --header 'referer: https://nim-disconnected.lab.f5npi.net/ui/settings/license' | jq
 
     {
       "telemetry":"Report generation in progress"
@@ -298,8 +350,8 @@ below.
 1. After a few seconds, run the following command below to download the report on to the **Jumphost**. In the example
 here, the usage report is downloaded as a zip file named `usage.zip`.
     ```shell
-    curl -k --location \
-      'https://nim-disconnected.local/api/platform/v1/report/download?format=zip&reportType=telemetry&telemetryAction=download' \
+    curl --location \
+      'https://nim-disconnected.lab.f5npi.net/api/platform/v1/report/download?format=zip&reportType=telemetry&telemetryAction=download' \
       --header 'accept: */*' \
       --header "authorization: Basic $NIM_AUTH_TOKEN" \
       --output usage.zip
@@ -368,16 +420,16 @@ report named `acknowledgement.zip`. Remember to swap in the **UUID** for **\<rep
 1. Once your status report is downloaded, run the following command to upload it to NIM.
 
     ```shell
-    curl -k --location -s \
-      'https://nim-disconnected.local/api/platform/v1/report/upload' \
+    curl --location -s \
+      'https://nim-disconnected.lab.f5npi.net/api/platform/v1/report/upload' \
       --header "Authorization: Basic $NIM_AUTH_TOKEN" \
       --form 'file=@"acknowledgement.zip"' | jq
     ```
 
     <Collapsible title="Example Output">
     ```shell
-    ubuntu@lab-framework:~$ curl -k --location -s \
-      'https://nim-disconnected.local/api/platform/v1/report/upload' \
+    ubuntu@lab-framework:~$ curl --location -s \
+      'https://nim-disconnected.lab.f5npi.net/api/platform/v1/report/upload' \
       --header "Authorization: Basic $NIM_AUTH_TOKEN" \
       --form 'file=@"acknowledgement.zip"' | jq
     {

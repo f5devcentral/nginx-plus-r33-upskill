@@ -6,6 +6,8 @@ order: 4
 
 ## Introduction
 
+:bangbang: Be sure your UDF deployment is using at least *SDE NGINX Plus R33 Upskilling (**version 19**)*
+
 In this lab, we will be going through a scenario where the NGINX Plus instance is in a network restricted environment.
 Since it does not have internet connectivity, it needs to be configured to use NIM as the usage report endpoint. This
 lab will go through configuring this environment where NIM has internet connectivity.
@@ -69,22 +71,70 @@ do this by one of the following ways:
 
 1. On the bottom the file, you should notice the `mgmt` section is commented out. Update the config file with the
 following **mgmt** section. We will be doing the following:
-    - Set the **usage_report** endpoint to `nim-connected.local` which is our NIM instances
+    - Set the **usage_report** endpoint to `nim-connected.lab.f5npi.net` which is our NIM instances
     - Set a quicker **interval** so we can see the frequency in the NGINX logs.
-    - Enable **ssl_verify** following instructions from the [Configure SSL verification for usage reporting with self-signed
-    certificates](https://docs.nginx.com/nginx-instance-manager/system-configuration/secure-traffic/#trusting-self-signed-certificates)
-    guide.
     ```shell
     mgmt {
-      usage_report endpoint=nim-disconnected.local interval=30s;
-      ssl_trusted_certificate /etc/ssl/nginx/nim.pem;
+      usage_report endpoint=nim-connected.lab.f5npi.net interval=30s;
+    }
+    ```
+
+    > **NOTE:** This environment uses a valid signed certificate from LetsEncrypt because we want to keep **ssl_verify**
+    enabled. This is already setup and no actions are needed by you but if you want additional details enabling
+    **ssl_verify** with NIM, click on the **Show** button below.
+
+    <Collapsible title="SSL Verify with NIM Details">
+    <br/>
+    The following are two methods of how you can enable **ssl_verify** within this lab environment.
+    * Signed certificates
+    * Self-signed certificates
+
+    #### Signed Certificate
+
+    This lab environment uses a valid signed certificate from **LetsEncrypt**. Of the certificates LetsEncrypt created,
+    two are used: `fullchain.pem` and `privkay.pem`. These files are copied to the NIM instances located in
+    `/etc/nms/letsencrypt`.
+
+    <br/>
+    <br/>
+
+    The NIM ssl certificate configuration is then updated. A snippet of this is shown below.
+
+    ```shell
+    $ cat /etc/nginx/conf.d/nms-http.conf
+    . . .
+    # Main external HTTPS server
+    server {
+        . . .
+
+        ssl_certificate         /etc/nms/letsencrypt/fullchain.pem;
+        ssl_certificate_key     /etc/nms/letsencrypt/privkey.pem;
+    }
+    ```
+
+    <br/>
+    #### Self-Signed Certificate
+
+    If you wish to use a self-signed certificate, follow instructions from the [Configure SSL verification for usage reporting with self-signed
+    certificates](https://docs.nginx.com/nginx-instance-manager/system-configuration/secure-traffic/#trusting-self-signed-certificates)
+    guide.
+    <br/>
+    <br/>
+    The SSL configuration in the **mgmt** block of the NGINX Plus R33 instance uses the self-signed CA certificate and
+    SSL config from NIM which were created during the NIM installation. So here, the CA certificate is copied from NIM
+    to the NGINX Plus R33 instance. That CA certificate is referenced in `ssl_trusted_certificate`. And the `ssl_name`
+    used is **manager-server**. An snippet of the **mgmt** block looks like the following.
+
+    ```shell
+    mgmt {
+      usage_report endpoint=nim-connected.local;
+      ssl_trusted_certificate /full/path/to/ca/copied/from/nim/ca.pem;
       ssl_name manager-server;
     }
     ```
 
-    > The SSL configuration in the **mgmt** block uses the self-signed CA certificate and SSL config from NIM which were
-    created during the NIM installation. So here, the CA certificate is copied from NIM to the NGINX Plus R33 instance.
-    That CA certificate is referenced in `ssl_trusted_certificate`. And the `ssl_name` used is **manager-server**.
+    </Collapsible>
+
 
 1. On the top of the `/etc/nginx/nginx.conf` file, change the `error_log` to `debug`. Below is the example where the
 **error_log** is set to `debug`.

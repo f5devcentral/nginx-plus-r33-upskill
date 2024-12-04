@@ -6,7 +6,7 @@ order: 4
 
 ## Introduction
 
-:bangbang: Be sure your UDF deployment is using at least *SDE NGINX Plus R33 Upskilling (**version 19**)*
+:bangbang: Be sure your UDF deployment is using at least *SDE NGINX Plus R33 Upskilling (**version 20**)*
 
 In this lab, we will be going through a scenario where the NGINX Plus instance is in a network restricted environment.
 Since it does not have internet connectivity, it needs to be configured to use NIM as the usage report endpoint. This
@@ -235,7 +235,7 @@ log:
   level: debug
 ```
 
-For the example here, I used the default log location in `/etc/nms/nms.log`.
+For the example here, I used the default log location in `/var/log/nms/nms.log`.
 
 If there are any issues submitting the usage report from NIM to the F5 Licensing Endpoint, you will see **WARN** and
 **INFO** log messages coming from **DPM**. In my example here, I changed the time on the NGINX Plus instance to about
